@@ -697,11 +697,15 @@ html[data-os-theme="bulb"] :is(.window,.xbtn,.icon span,.pill,.send,.chat-box,.i
 
     const tvWindow=document.getElementById('win-tv');
     function setTVMode(popout){
+      const wasPopout=tvWindow.classList.contains('video-popout');
+      const width=tvWindow.offsetWidth||parseFloat(tvWindow.style.width)||360;
+      const preserve=wasPopout&&!popout;
       tvWindow.classList.toggle('video-popout',popout);
       tvWindow.classList.remove('tv-expanded');
-      tvWindow.dataset.preferredWidth=popout?'360':'640';
-      tvWindow.style.width=popout?'360px':'640px';
-      tvWindow.style.height=popout?'203px':'550px';
+      const nextWidth=preserve?width:(popout?360:640);
+      tvWindow.dataset.preferredWidth=String(nextWidth);
+      tvWindow.style.width=nextWidth+'px';
+      tvWindow.style.height=(popout?Math.round(nextWidth*9/16):preserve?Math.round(nextWidth*9/16)+180:550)+'px';
       document.getElementById('tv-popout').textContent=popout?'open TV':'pop out ↗';
       fitWindow(tvWindow);
     }
