@@ -322,7 +322,7 @@ html[data-os-theme="bulb"] :is(.window,.xbtn,.icon span,.pill,.send,.chat-box,.i
   </div>
 
   
-  <dialog id="weather-city"><form id="weather-form"><label for="weather-city-input">your city</label><input id="weather-city-input" required placeholder="city name" autocomplete="address-level2"><button>show weather</button><button type="button" id="weather-close">×</button></form><a href="https://open-meteo.com/" target="_blank" rel="noopener">weather by open-meteo</a></dialog><iframe id="os-companion" src="/?companion=1&v=direct-drag-20261013" title="Chat with Jolie" allow="autoplay" loading="lazy"></iframe><div class="taskbar"><button id="theme-cycle" type="button" aria-label="Theme: bow. Switch to moon" title="bow · blue & pink → moon"><span aria-hidden="true">✧ ·</span><span id="theme-symbol" aria-hidden="true"></span><span aria-hidden="true">· ✧</span></button><div class="music-controls"><button id="music-play" aria-label="Play or pause music">▶</button><button id="music-next" aria-label="Next song">▸▸</button><span id="music-status">music</span></div></div>
+  <dialog id="weather-city"><form id="weather-form"><label for="weather-city-input">your city</label><input id="weather-city-input" required placeholder="city name" autocomplete="address-level2"><button>show weather</button><button type="button" id="weather-close">×</button></form><a href="https://open-meteo.com/" target="_blank" rel="noopener">weather by open-meteo</a></dialog><iframe id="os-companion" src="/?companion=1&v=companion-bounds-20261013" title="Chat with Jolie" allow="autoplay" loading="lazy"></iframe><div class="taskbar"><button id="theme-cycle" type="button" aria-label="Theme: bow. Switch to moon" title="bow · blue & pink → moon"><span aria-hidden="true">✧ ·</span><span id="theme-symbol" aria-hidden="true"></span><span aria-hidden="true">· ✧</span></button><div class="music-controls"><button id="music-play" aria-label="Play or pause music">▶</button><button id="music-next" aria-label="Next song">▸▸</button><span id="music-status">music</span></div></div>
   <script>
     // Back to picnic (more robust)
     document.getElementById('backBtn').addEventListener('click', () => {
@@ -860,6 +860,7 @@ applyOSTheme(document.documentElement.dataset.osTheme||'bow');
 .widget-size:after{content:"";position:absolute;inset:7px;opacity:0;background:linear-gradient(135deg,transparent 45%,#805668 46%,#805668 54%,transparent 55%,transparent 70%,#805668 71%,#805668 79%,transparent 80%)}
 .free-widget:hover>.widget-size:after,.widget-size:focus:after{opacity:.65}
 #win-8ball.free-widget .titlebar{pointer-events:none}#win-8ball.free-widget .controls{pointer-events:auto}
+#widget-character,#widget-character>.widget-inner{pointer-events:none}#widget-character #os-companion,#widget-character>.widget-size{pointer-events:auto}
 #widget-character>.widget-size{right:auto;bottom:auto;left:calc(74.36% - 12px);top:calc(100% - 12px)}
 </style>
 <script>
@@ -886,6 +887,7 @@ applyOSTheme(document.documentElement.dataset.osTheme||'bow');
   function dragStart(x,y){drag={px:x,py:y,...w.layout};moved=false;outer.style.zIndex=3000;}
   function dragMove(x,y,factor=1){if(!drag)return;const dx=(x-drag.px)*factor,dy=(y-drag.py)*factor;if(Math.hypot(dx,dy)<5&&!moved)return;moved=true;w.layout.x=drag.x+dx;w.layout.y=drag.y+dy;apply();}
   function dragEnd(){if(drag&&moved)persist();drag=null;}
+  if(id==='character'){item.style.clipPath='inset(242px 92px 0 142px)';window.addEventListener('message',e=>{if(e.origin!==location.origin||e.source!==item.contentWindow||e.data?.type!=='picnic-companion-bounds')return;const d=e.data;if(![d.left,d.top,d.right,d.bottom,d.width,d.height].every(Number.isFinite))return;outer.dataset.chatOpen=String(d.open);item.style.clipPath=`inset(${d.top}px ${Math.max(0,d.width-d.right)}px ${Math.max(0,d.height-d.bottom)}px ${d.left}px)`;});}
   if(id==='character')window.addEventListener('message',e=>{if(e.origin!==location.origin||e.source!==item.contentWindow||e.data?.type!=='picnic-character-drag')return;const d=e.data;if(d.phase==='start')dragStart(d.x,d.y);else if(d.phase==='move')dragMove(d.x,d.y);else dragEnd();});
   else{
    const surface=id==='ball'?outer:item;
@@ -904,6 +906,7 @@ applyOSTheme(document.documentElement.dataset.osTheme||'bow');
   const clear=(r)=>r.x>=pad&&r.y>=56&&r.x+r.w<=root.clientWidth-pad&&r.y+r.h<=root.clientHeight-80&&occupied.every(b=>r.x+r.w+gap<=b.x||b.x+b.w+gap<=r.x||r.y+r.h+gap<=b.y||b.y+b.h+gap<=r.y);
   // The character frame reserves room for her speech bubble as well as her sprite.
   for(const w of [...widgets].sort((a,b)=>({character:0,note:1,ball:2}[a.id]-{character:0,note:1,ball:2}[b.id]))){
+   if(w.id==='character'&&w.outer.dataset.chatOpen!=='true'){const l=w.layout;occupied.push({x:l.x+150*l.scale,y:l.y+250*l.scale,w:140*l.scale,h:140*l.scale});continue;}
    let found=null;const initial=root.clientWidth<=600&&w.id==='character'?Math.min(.5,w.layout.scale):w.layout.scale;
    for(const scale of [...Array.from({length:Math.max(1,Math.ceil((initial-.45)/.08))},(_,i)=>initial-i*.08),.45]){
     if(found)break;

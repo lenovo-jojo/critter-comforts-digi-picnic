@@ -732,5 +732,18 @@ if(document.documentElement.classList.contains('companion-mode')){
  }
 }
 </script>
+
+<script>
+if(companionMode){
+ const bubble=document.getElementById('speech');
+ function reportCompanionBounds(){
+  const avatar=Array.from(document.querySelectorAll('.me-img,#me-bob-video')).find(e=>getComputedStyle(e).display!=='none'&&getComputedStyle(e).visibility!=='hidden');if(!avatar)return;
+  const a=avatar.getBoundingClientRect(),open=getComputedStyle(bubble).display!=='none';const b=open?bubble.getBoundingClientRect():a;
+  parent.postMessage({type:'picnic-companion-bounds',open,left:Math.max(0,Math.min(a.left,b.left)-8),top:Math.max(0,Math.min(a.top,b.top)-8),right:Math.min(innerWidth,Math.max(a.right,b.right)+8),bottom:Math.min(innerHeight,Math.max(a.bottom,b.bottom)+8),width:innerWidth,height:innerHeight},location.origin);
+ }
+ new MutationObserver(reportCompanionBounds).observe(document.querySelector('.main-container'),{subtree:true,attributes:true,attributeFilter:['style','class']});
+ new ResizeObserver(reportCompanionBounds).observe(bubble);window.addEventListener('resize',reportCompanionBounds);reportCompanionBounds();
+}
+</script>
 </body>
 </html>
