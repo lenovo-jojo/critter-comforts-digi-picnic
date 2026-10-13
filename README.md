@@ -36,7 +36,7 @@ The checker reports missing local assets and checks inline JavaScript syntax whe
 
 Upload the contents of `source/` to Neocities, preserving paths. This repository does not automatically deploy or contain hosting credentials.
 
-The site is static. Laptop chat messages and visitor preferences use localStorage in each visitor’s browser; messages are not a shared guestbook. Character chat combines guided responses with an optional SmolLM2 360M model through WebLLM. The model downloads only when needed and requires WebGPU; its conversational ability is limited. The TV playlist is a saved selection of Archive.org items; third-party availability can change.
+The site is static. Laptop chat messages and visitor preferences use localStorage in each visitor’s browser; messages are not a shared guestbook. Character chat combines guided responses with an optional Qwen3 4B model in a browser worker through WebLLM. The model downloads only when needed and requires WebGPU; the first model download is roughly 2 GB, so guided site replies remain available without it. The OS character waits for a click and dismisses unattended bubbles. Camera view uses the existing pixel backdrop with a responsive photo gallery. The TV playlist is a saved selection of Archive.org items; third-party availability can change.
 
 ## Creative direction and AI assistance
 

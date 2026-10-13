@@ -141,7 +141,7 @@
   .laptop-frame iframe{position:absolute;inset:0;display:block;}
 .close-laptop{position:absolute;right:10px;top:10px;z-index:10;border:1px solid #c59aaa;background:#fffaf2;color:#805668;border-radius:5px;width:25px;height:25px;cursor:pointer;}
 </style>
-</head>
+<style>html,body,button,a,input,textarea,[role="button"],.icon,.me-img,.laptop,.cam-img,.phone-img,.boombox{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2732%27%20height%3D%2732%27%20viewBox%3D%270%200%2032%2032%27%3E%3Cpath%20d%3D%27M4%203H26V7H24V11H21V15H18V20H14V25H10V29H7V18H6V9H4Z%27%20fill%3D%27%23f4cf78%27%20stroke%3D%27%237b5264%27%20stroke-width%3D%271.5%27%2F%3E%3Cpath%20d%3D%27M4%203H26V7H4Z%27%20fill%3D%27%23d79964%27%2F%3E%3Cpath%20d%3D%27M10%2010H14V14H10ZM17%208H21V12H17ZM9%2019H13V23H9Z%27%20fill%3D%27%23cc7c87%27%2F%3E%3C%2Fsvg%3E") 4 3, auto;} .titlebar{cursor:move;} .window-grip,#tv-resize{cursor:nwse-resize;}#chatty-trigger{margin:10px auto 0;} .cam-frame{width:min(1100px,94vw);height:min(800px,90vh);border-radius:2px;} .cam-frame iframe{border-radius:0;}</style></head>
 <body>
   <div class="main-container">
     <div class="bg-image"></div>
@@ -169,7 +169,7 @@
       <img src="/assets/sunshine.png" alt="sun" style="width:100%;height:auto"/>
       <div id="sun-video-overlay">
         <iframe id="sun-yt"
-          src="https://www.youtube.com/embed/XC7H7FtUhJc?autoplay=1&mute=1&rel=0&controls=0&modestbranding=1&playsinline=1"
+          data-src="https://www.youtube.com/embed/XC7H7FtUhJc?autoplay=1&mute=1&rel=0&controls=0&modestbranding=1&playsinline=1"
           allow="autoplay; encrypted-media" allowfullscreen></iframe>
       </div>
     </div>
@@ -193,7 +193,7 @@
   <div id="cam-overlay">
     <div class="cam-frame">
       <button class="close-cam" id="close-cam">✖</button>
-      <iframe src="cam.html" title="Camera View"></iframe>
+      <iframe data-src="/cam?v=20261012-viewfinder" title="Camera View"></iframe>
     </div>
   </div>
 
@@ -201,7 +201,7 @@
   <div id="laptop-overlay">
     <div class="laptop-frame">
       <button class="close-laptop" id="close-laptop">✖</button>
-      <iframe src="/laptop1?v=20261012-popout" title="Laptop" allow="fullscreen" allowfullscreen></iframe>
+      <iframe data-src="/laptop1?v=20261012-refine" title="Laptop" allow="fullscreen" allowfullscreen></iframe>
     </div>
   </div>
 
@@ -209,7 +209,7 @@
   <div id="phone-overlay">
     <div class="ig-frame">
       <button class="close-phone" id="close-phone">✖</button>
-      <iframe src="phone.html" title="Phone window"
+      <iframe data-src="phone.html" title="Phone window"
               style="width:100%; height:100%; border:0;"></iframe>
     </div>
   </div>
@@ -381,7 +381,16 @@
       "things are always changing so come check in on me for updates :3",
       null
     ];
+    let returningVisitor=false;
+    try{if(!companionMode){returningVisitor=localStorage.getItem('picnic_visited')==='yes';localStorage.setItem('picnic_visited','yes');}}catch(_){}
+    if(returningVisitor)lines[0]=Math.random()<.5?"hey! you're back!":"oh it's you again! hi. :)";
     let hasStarted = false, idx = -1, isTyping = false, typingInterval = null, currentFullText = "";
+    let companionDismissTimer;
+    function keepCompanionBubble(){
+      clearTimeout(companionDismissTimer);
+      if(companionMode)companionDismissTimer=setTimeout(()=>{if(isTyping){keepCompanionBubble();return;}speechEl.style.display='none';},12000);
+    }
+    ['pointerdown','keydown'].forEach(event=>document.addEventListener(event,keepCompanionBubble));
 
     function positionSpeechBubble(){
       if(companionMode){speechEl.style.left=Math.min(innerWidth-165,315)+"px";speechEl.style.top="235px";return;}
@@ -393,7 +402,7 @@
     function showTapIndicator(show){ tapIndEl.style.visibility = show && !characterChatActive ? "visible" : "hidden"; }
     function isBetweenLines(){ return speechEl.style.display === 'block' && !isTyping; }
     let characterChatActive=false;
-    let introComplete=false;try{introComplete=localStorage.getItem('picnic_intro_complete')==='yes';}catch(_){}
+    let introComplete=companionMode;try{introComplete=companionMode||localStorage.getItem('picnic_intro_complete')==='yes';}catch(_){}
     function rememberIntro(){introComplete=true;try{localStorage.setItem('picnic_intro_complete','yes');}catch(_){} }
 
     window.picnicCharacterReply=async text=>{await ensureAudioReady();typeWriter(text.toLowerCase());};
@@ -406,7 +415,7 @@
       const chars = Array.from(text); let i = 0;
       clearInterval(typingInterval);
       typingInterval = setInterval(() => {
-        if (i >= chars.length){ clearInterval(typingInterval); isTyping = false; showTapIndicator(true); setMeMode('idle'); return; }
+        if (i >= chars.length){ clearInterval(typingInterval); isTyping = false; showTapIndicator(true); setMeMode('idle'); syncChatty();keepCompanionBubble();return; }
         const ch = chars[i++]; speechTextEl.textContent += ch; playPhonemeForChar(ch);
       }, speed);
     }
@@ -421,8 +430,9 @@
       typeWriter(text);
     }
     async function startOrAdvanceDialogue(){
-      if(speechEl.style.display==='none' && characterChatActive){speechEl.style.display='block';positionSpeechBubble();document.getElementById('ai-input').focus();return;}
+      if(speechEl.style.display==='none' && characterChatActive){keepCompanionBubble();speechEl.style.display='block';positionSpeechBubble();document.getElementById('ai-input').focus();return;}
       if(characterChatActive){if(isTyping)finishTypingNow();window.dispatchEvent(new Event('picnic-next-message'));return;}
+      keepCompanionBubble();
       await ensureAudioReady();
       if (!hasStarted){ hasStarted = true; idx = 0; showLine(); return; }
       if (isTyping){ finishTypingNow(); return; }
@@ -433,18 +443,19 @@
     /* Sun overlay toggle */
     const sunOverlay = document.getElementById('sun-video-overlay');
     const sunIframe  = document.getElementById('sun-yt');
-    function toggleSun(){
+    function toggleSun(){if(!sunIframe.getAttribute('src'))sunIframe.src=sunIframe.dataset.src;
       const visible = sunOverlay.style.display === 'block';
       if (visible) { const url = sunIframe.src; sunIframe.src = 'about:blank'; sunOverlay.style.display = 'none'; setTimeout(() => { sunIframe.src = url; }, 50); }
       else { sunOverlay.style.display = 'block'; }
     }
 
     /* helpers */
-    function openLaptop(){ document.getElementById('laptop-overlay').style.display = 'flex'; }
+    function mountOverlay(id){const frame=document.querySelector('#'+id+' iframe');if(frame.dataset.src&&!frame.getAttribute('src'))frame.src=frame.dataset.src;}
+    function openLaptop(){mountOverlay('laptop-overlay');document.getElementById('laptop-overlay').style.display='flex';}
     function closeLaptop(){ document.getElementById('laptop-overlay').style.display = 'none'; }
     function closeCam(){ document.getElementById('cam-overlay').style.display = 'none'; }
     function openPhone(){
-      const o = document.getElementById('phone-overlay');
+      mountOverlay('phone-overlay');const o = document.getElementById('phone-overlay');
       o.style.display = 'flex';
       if (window.instgrm && instgrm.Embeds && typeof instgrm.Embeds.process === 'function'){
         try { instgrm.Embeds.process(); } catch(_) {}
@@ -513,13 +524,15 @@
       document.getElementById('music-no').addEventListener('click',()=>{popup.style.display='none';try{localStorage.setItem('picnic_aux_choice','no');}catch(_){} });
       let auxChoice=null;try{auxChoice=localStorage.getItem('picnic_aux_choice');}catch(_){}
       if(companionMode)popup.style.display='none';else if(auxChoice==='yes')acceptAux();else if(auxChoice==='no')popup.style.display='none';else popup.style.display='flex';
-      // Every visit starts the original intro; completed visitors can jump to AI chat.
-      hasStarted=true;idx=0;currentFullText=lines[0];speechTextEl.textContent=currentFullText;speechEl.style.display='block';showTapIndicator(true);syncChatty();positionSpeechBubble();
-      let greetingSpoken=false;
-      async function greetWithVoice(){if(greetingSpoken||characterChatActive)return;await ensureAudioReady();if(greetingSpoken||characterChatActive||idx!==0)return;greetingSpoken=true;typeWriter(lines[0]);}
-      greetWithVoice().catch(()=>{});
-      window.addEventListener('pointerdown',()=>{greetWithVoice().catch(()=>{});},{once:true});
-      window.addEventListener('keydown',()=>{greetWithVoice().catch(()=>{});},{once:true});
+      if(companionMode){hasStarted=false;idx=-1;speechEl.style.display='none';}
+      else{
+        hasStarted=true;idx=0;currentFullText=lines[0];speechTextEl.textContent=currentFullText;speechEl.style.display='block';showTapIndicator(true);syncChatty();positionSpeechBubble();
+        let greetingSpoken=false;
+        async function greetWithVoice(){if(greetingSpoken||characterChatActive)return;await ensureAudioReady();if(greetingSpoken||characterChatActive||idx!==0)return;greetingSpoken=true;typeWriter(lines[0]);}
+        greetWithVoice().catch(()=>{});
+        window.addEventListener('pointerdown',()=>{greetWithVoice().catch(()=>{});},{once:true});
+        window.addEventListener('keydown',()=>{greetWithVoice().catch(()=>{});},{once:true});
+      }
 
 
       /* Keyboard */
@@ -535,7 +548,7 @@
       });
 
       /* Camera overlay */
-      document.getElementById('camera').addEventListener('click', () => { document.getElementById('cam-overlay').style.display = 'flex'; });
+      document.getElementById('camera').addEventListener('click', () => {mountOverlay('cam-overlay'); document.getElementById('cam-overlay').style.display = 'flex'; });
       document.getElementById('close-cam').addEventListener('click', (e) => { e.stopPropagation(); closeCam(); });
       document.getElementById('cam-overlay').addEventListener('click', (event) => {
         const frame = document.querySelector('.cam-frame');
@@ -578,13 +591,14 @@
 </style><script type="module">
 const composer=document.getElementById('character-composer'),status=document.getElementById('ai-status'),input=document.getElementById('ai-input'),send=document.getElementById('ai-send'),retry=document.getElementById('ai-retry');
 let engine,loading=false,busy=false;
-const history=[{role:'system',content:"You are a friendly character at a virtual picnic, chatting with the visitor. Reply in lowercase with one short natural sentence. Read their whole message and recent conversation. Build on the specific facts they have shared. Be curious about one detail that is still unknown. Acknowledge what they say, then ask a relevant follow-up when it fits. Treat the visitor’s stated plans, destination, and experiences as established facts. Website facts: click the boombox to start music. The laptop has snake, tarot, a chatroom, and tv. The phone has Jolie’s socials and LinkedIn. Use website facts when relevant to the visitor’s question."}];
+const history=[{role:'system',content:"You are Jolie’s virtual picnic character. Chat warmly and casually in lowercase. Reply in one or two short sentences, up to 25 words. Respond to ordinary plans with interest and an upbeat tone. Follow the visitor’s topic and remember details from the conversation. Acknowledge what they shared, then ask one specific question about it. If they say they are going to the airport, ask where they are going. If they mention a destination, ask about their plans there. If they mention their sister, ask about their sister. Keep the conversation centered on the visitor’s life, interests, and experiences."}];
 function addMessage(who,text){if(who==='AI')window.picnicCharacterReply(text);}
-async function loadModel(){if(engine||loading)return;loading=true;retry.hidden=true;status.textContent='Loading the AI on your device… the first download may take a few minutes.';input.placeholder='loading conversation model…';
+async function loadModel(){if(engine||loading)return;loading=true;retry.hidden=true;status.textContent='loading qwen3 4b on your device… first download takes a few minutes.';input.placeholder='loading conversation model…';
 try{if(!navigator.gpu)throw new Error('This browser does not support WebGPU. Try a recent Chrome or Edge on a computer.');
 const webllm=await import('https://esm.run/@mlc-ai/web-llm@0.2.85');
-const model=webllm.prebuiltAppConfig.model_list.find(m=>m.model_id==='SmolLM2-360M-Instruct-q4f16_1-MLC');if(!model)throw new Error('The conversation model is unavailable.');
-engine=await webllm.CreateMLCEngine(model.model_id,{initProgressCallback:p=>{status.textContent=p.text;input.placeholder='loading '+Math.round(p.progress*100)+'%…';}});
+const model=webllm.prebuiltAppConfig.model_list.find(m=>m.model_id==='Qwen3-4B-q4f16_1-MLC');if(!model)throw new Error('The conversation model is unavailable.');
+const workerSource="import {WebWorkerMLCEngineHandler} from 'https://esm.run/@mlc-ai/web-llm@0.2.85';const handler=new WebWorkerMLCEngineHandler();self.onmessage=event=>handler.onmessage(event);";
+engine=await webllm.CreateWebWorkerMLCEngine(new Worker(URL.createObjectURL(new Blob([workerSource],{type:'text/javascript'})),{type:'module'}),model.model_id,{initProgressCallback:p=>{status.textContent=p.text;input.placeholder='loading '+Math.round(p.progress*100)+'%…';}});
 status.textContent='Ready ♡ AI replies run on your device.';input.disabled=false;input.placeholder='';send.disabled=false;input.focus();
 }catch(error){status.textContent=error.message||'Could not load the AI. Please try again.';input.placeholder='could not load — try again';retry.hidden=false;}finally{loading=false;}}
 function loadAI(){input.disabled=false;send.disabled=false;input.placeholder='';status.textContent='Ready ♡';input.focus();addMessage('AI','hey! what brought you here?');}
@@ -594,19 +608,23 @@ composer.addEventListener('click',e=>e.stopPropagation());
  const curiousQuestions=['what brought you here?','what’s your vibe today?','what have you been into lately?','are you here to chill or explore?'];let curiosityIndex=0;
 function groundedReply(text,continuation){
  if(continuation)return curiousQuestions[curiosityIndex++%curiousQuestions.length];
- if(/\b(airport|flight|flying|travel|trip)\b/i.test(text))return 'ooh are you heading home or going somewhere new?';
- if(/\b(hello|hi|hey)\b/i.test(text))return 'hey :3 what brought you here?';
+
+ if(/^(hello|hi|hey)[! .:3]*$/i.test(text.trim()))return 'hey :3 what brought you here?';
  if(/\b(tired|exhausted|long day)\b/i.test(text))return 'aw, what’s been keeping you busy?';
- if(/\b(home|nashville)\b/i.test(text))return 'what do you like most about being home?';
+
  if(/\b(bored|boring|game|games|play|watch|tv|computer|laptop)\b/i.test(text))return 'click the laptop for snake, tarot, and tv :3';
  if(/\b(music|song|songs|boombox|boom box|listen|listening|audio)\b/i.test(text))return 'click the boombox to put some music on :3';
  if(/\b(socials?|instagram|tumblr|pinterest|linkedin|contact)\b/i.test(text))return 'click the phone for my socials, including linkedin :3';
  if(/(?:about (you|jolie)|who (are you|is jolie)|your (job|work|career|education)|where did you study|belmont)/i.test(text))return /study|education|school|belmont/i.test(text)?'jolie studied at belmont; her linkedin is in the phone.':'my linkedin is in the phone if you wanna know more :3';
  return null;
 }
-async function requestReply(text,continuation=false){if(busy)return;busy=true;send.disabled=true;const previousLength=history.length;history.push({role:'user',content:continuation?'what would you like to ask me?':text});status.textContent='Thinking…';try{const quick=groundedReply(text,continuation);if(quick){history.push({role:'assistant',content:quick});addMessage('AI',quick);status.textContent='Ready ♡';return;}await loadModel();if(!engine)throw new Error('Model unavailable');const result=await engine.chat.completions.create({messages:[{role:'system',content:'Ask the visitor one short question about their latest message. Be curious about their interests or experiences. Write in lowercase. Reply with just the question, around 5 to 10 words.'},...history.slice(1).slice(-20)],max_tokens:180,temperature:0.5});let raw=(result.choices[0].message.content||'hmm, what do you think?').toLowerCase().trim();
-function completeThought(text){return text.match(/^[\s\S]*?[.!?](?:\s|$)/)?.[0].trim()||text;}
-let answer=completeThought(raw);if(!answer.endsWith('?')||/\b(click|started|playing|opened|booked)\b/i.test(answer)||answer.split(/\s+/).length>16)answer='what do you like about that?';
+async function requestReply(text,continuation=false){if(busy)return;busy=true;send.disabled=true;const previousLength=history.length;history.push({role:'user',content:continuation?'what would you like to ask me?':text});status.textContent='Thinking…';try{const quick=groundedReply(text,continuation);if(quick){history.push({role:'assistant',content:quick});addMessage('AI',quick);status.textContent='Ready ♡';return;}await loadModel();if(!engine)throw new Error('Model unavailable');const result=await engine.chat.completions.create({messages:[history[0],...history.slice(1).slice(-20)],max_tokens:160,temperature:0.65,enable_thinking:false,extra_body:{enable_thinking:false}});
+let raw=(result.choices[0].message.content||'what have you been up to?').replace(/<think>[\s\S]*?<\/think>/g,'').toLowerCase().trim();
+const sentences=raw.match(/[^.!?]+[.!?]+(?:["']?)(?=\s|$)/g)||[];
+const question=sentences.find(sentence=>sentence.trim().endsWith('?'));
+let answer=(question&&sentences[0]!==question?[sentences[0],question]:sentences.slice(0,2)).join(' ').trim();
+if(!answer&&result.choices[0].finish_reason!=='length')answer=raw;
+if(!answer||answer.split(/\s+/).length>45)answer=sentences[0]?.trim()||'what have you been up to?';
 history.push({role:'assistant',content:answer});addMessage('AI',answer);status.textContent='Ready ♡';}catch(_){history.splice(previousLength);status.textContent='That reply failed. Try again.';}finally{busy=false;send.disabled=false;if(!continuation)input.focus();}}
 window.addEventListener('picnic-next-message',()=>requestReply('',true));
 document.getElementById('ai-form').addEventListener('submit',e=>{e.preventDefault();const text=input.value.trim();if(!text||busy)return;input.value='';requestReply(text);});
@@ -615,5 +633,5 @@ document.getElementById('ai-form').addEventListener('submit',e=>{e.preventDefaul
 #ai-form{display:flex;gap:12px;align-items:center;}#ai-input{border:0;border-bottom:1px solid #fff8;border-radius:0;padding:7px 0;font:16px VT323,monospace;background:transparent;}#ai-send{border:0!important;padding:7px 0;font:16px VT323,monospace!important;}#ai-status{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}#ai-retry{margin-top:8px;}
 </style><style>
 .speech{white-space:normal;padding:12px 18px;}#speech-text{display:block;white-space:pre-wrap;}#character-composer{margin-top:10px;}#ai-form{margin:0;} .speech:has(#character-composer:not([hidden])) .tap-indicator{display:none;}
-</style><style>#ai-input{caret-color:#fff;}</style><style>#close-speech{position:absolute;top:4px;right:5px;background:#000;color:#fff;border:0;font:20px VT323,monospace;padding:0 4px;cursor:pointer;line-height:1;}#speech-text{padding-right:14px;}</style><style>#music-popup{inset:auto 16px 16px auto;background:transparent;width:min(270px,calc(100vw - 32px));z-index:10002;pointer-events:none;}#music-popup .popup-bubble{pointer-events:auto;background:#ffeaf5;border:2px solid #ff99cc;border-radius:14px;padding:14px;text-align:center;box-shadow:3px 4px 0 #d46aa555;}#music-popup p{font:19px VT323,monospace;margin:5px 0;}#music-popup button{margin:5px;padding:7px 10px;font:18px VT323,monospace;}</style><style>.companion-mode body,.companion-mode .main-container{background:transparent!important;background-image:none!important;width:100%;height:100%;overflow:hidden;}.companion-mode .main-container> :not(.me-img):not(#speech){display:none!important;}.companion-mode body> :not(.main-container):not(script):not(style){display:none!important;}.companion-mode .me-img{left:18px;top:auto;bottom:0;width:140px;max-width:none;transform:none!important;}.companion-mode .speech{width:310px;font-size:10px;padding:10px 14px;}.companion-mode #ai-input{font-size:17px;}</style><style>html.companion-mode, .companion-mode body,.companion-mode .main-container{height:100vh!important;min-height:0!important;}</style></body>
+</style><style>#ai-input{caret-color:#fff;}</style><style>#close-speech{position:absolute;top:4px;right:5px;background:#000;color:#fff;border:0;font:20px VT323,monospace;padding:0 4px;cursor:pointer;line-height:1;}#speech-text{padding-right:14px;}</style><style>#music-popup{inset:auto 16px 16px auto;background:transparent;width:min(270px,calc(100vw - 32px));z-index:10002;pointer-events:none;}#music-popup .popup-bubble{pointer-events:auto;background:#ffeaf5;border:2px solid #ff99cc;border-radius:14px;padding:14px;text-align:center;box-shadow:3px 4px 0 #d46aa555;}#music-popup p{font:19px VT323,monospace;margin:5px 0;}#music-popup button{margin:5px;padding:7px 10px;font:18px VT323,monospace;}</style><style>.companion-mode body,.companion-mode .main-container{background:transparent!important;background-image:none!important;width:100%;height:100%;overflow:hidden;}.companion-mode .main-container> :not(.me-img):not(#speech){display:none!important;}.companion-mode body> :not(.main-container):not(script):not(style){display:none!important;}.companion-mode .me-img{left:18px;top:auto;bottom:0;width:140px;max-width:none;transform:none!important;}.companion-mode .speech{width:310px;font-size:10px;padding:10px 14px;}.companion-mode #ai-input{font-size:17px;}</style><style>html.companion-mode, .companion-mode body,.companion-mode .main-container{height:100vh!important;min-height:0!important;}</style><style>body,body *{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2732%27%20height%3D%2732%27%20viewBox%3D%270%200%2032%2032%27%3E%3Cpath%20d%3D%27M4%203H26V7H24V11H21V15H18V20H14V25H10V29H7V18H6V9H4Z%27%20fill%3D%27%23f4cf78%27%20stroke%3D%27%237b5264%27%20stroke-width%3D%271.5%27%2F%3E%3Cpath%20d%3D%27M4%203H26V7H4Z%27%20fill%3D%27%23d79964%27%2F%3E%3Cpath%20d%3D%27M10%2010H14V14H10ZM17%208H21V12H17ZM9%2019H13V23H9Z%27%20fill%3D%27%23cc7c87%27%2F%3E%3C%2Fsvg%3E") 4 3, auto!important}.titlebar{cursor:move!important}.window-grip,#tv-resize{cursor:nwse-resize!important}#chatty-trigger{margin:10px auto 0!important}.cam-img,.phone-img{z-index:6}</style></body>
 </html>
