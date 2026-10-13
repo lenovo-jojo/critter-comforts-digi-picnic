@@ -8,9 +8,11 @@ A playful personal website: hang out with an animated character, put music on, a
 
 - **Picnic character:** typed dialogue, character animation, per-letter voice sounds, and an inline conversation input.
 - **Laptop:** tarot, Snake, a random Magic 8 Ball, browser-local chat messages, and an Archive.org TV playlist.
-- **Video popout:** drag to move or resize, fullscreen, and remembered layout.
+- **Desktop windows:** drag and resize every app; save open windows, dimensions, positions, and TV selection locally. The whole OS can open fullscreen.
 - **Phone:** social links and LinkedIn.
-- **Music:** SoundCloud controls with a remembered, nonblocking aux choice.
+- **Music:** SoundCloud controls in the bottom bar, with a remembered, nonblocking aux choice.
+- **Desktop companion:** the homepage character, animations, and inline chat at the bottom left.
+- **Weather:** visitor-selected city weather illustration and temperature from Open-Meteo; the city is remembered locally.
 
 ## Run locally
 
