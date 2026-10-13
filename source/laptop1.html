@@ -322,7 +322,7 @@ html[data-os-theme="bulb"] :is(.window,.xbtn,.icon span,.pill,.send,.chat-box,.i
   </div>
 
   
-  <dialog id="weather-city"><form id="weather-form"><label for="weather-city-input">your city</label><input id="weather-city-input" required placeholder="city name" autocomplete="address-level2"><button>show weather</button><button type="button" id="weather-close">×</button></form><a href="https://open-meteo.com/" target="_blank" rel="noopener">weather by open-meteo</a></dialog><iframe id="os-companion" src="/?companion=1" title="Chat with Jolie" allow="autoplay" loading="lazy"></iframe><div class="taskbar"><button id="theme-cycle" type="button" aria-label="Theme: bow. Switch to moon" title="bow · blue & pink → moon"><span aria-hidden="true">✧ ·</span><span id="theme-symbol" aria-hidden="true"></span><span aria-hidden="true">· ✧</span></button><div class="music-controls"><button id="music-play" aria-label="Play or pause music">▶</button><button id="music-next" aria-label="Next song">▸▸</button><span id="music-status">music</span></div></div>
+  <dialog id="weather-city"><form id="weather-form"><label for="weather-city-input">your city</label><input id="weather-city-input" required placeholder="city name" autocomplete="address-level2"><button>show weather</button><button type="button" id="weather-close">×</button></form><a href="https://open-meteo.com/" target="_blank" rel="noopener">weather by open-meteo</a></dialog><iframe id="os-companion" src="/?companion=1&v=direct-drag-20261013" title="Chat with Jolie" allow="autoplay" loading="lazy"></iframe><div class="taskbar"><button id="theme-cycle" type="button" aria-label="Theme: bow. Switch to moon" title="bow · blue & pink → moon"><span aria-hidden="true">✧ ·</span><span id="theme-symbol" aria-hidden="true"></span><span aria-hidden="true">· ✧</span></button><div class="music-controls"><button id="music-play" aria-label="Play or pause music">▶</button><button id="music-next" aria-label="Next song">▸▸</button><span id="music-status">music</span></div></div>
   <script>
     // Back to picnic (more robust)
     document.getElementById('backBtn').addEventListener('click', () => {
@@ -871,11 +871,24 @@ applyOSTheme(document.documentElement.dataset.osTheme||'bow');
   const w={id,outer,bw,bh,layout:saved[id]||{x:ball?(parseFloat(item.style.left)||180):rect.left-rr.left,y:ball?(parseFloat(item.style.top)||90):rect.top-rr.top,scale:1}};widgets.push(w);
   function apply(){const l=w.layout;l.scale=Math.max(.45,Math.min(2,Number(l.scale)||1,(root.clientWidth-24)/bw,(root.clientHeight-100)/bh));l.x=Math.max(12,Math.min(root.clientWidth-bw*l.scale-12,Number(l.x)||12));l.y=Math.max(48,Math.min(root.clientHeight-bh*l.scale-64,Number(l.y)||48));for(const [n,v] of Object.entries({'x':l.x+'px','y':l.y+'px','w':bw*l.scale+'px','h':bh*l.scale+'px','scale':l.scale}))outer.style.setProperty('--widget-'+n,v);}
   w.apply=apply;apply();
-  for(const mode of ['move','size']){const handle=document.createElement('button');handle.type='button';handle.className='widget-'+mode;handle.textContent=mode==='move'?'✥':'↘';handle.setAttribute('aria-label',(mode==='move'?'Move ':'Resize ')+id);outer.append(handle);let start=null;
+  for(const mode of ['size']){const handle=document.createElement('button');handle.type='button';handle.className='widget-'+mode;handle.textContent=mode==='move'?'✥':'↘';handle.setAttribute('aria-label',(mode==='move'?'Move ':'Resize ')+id);outer.append(handle);let start=null;
    handle.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();handle.setPointerCapture(e.pointerId);outer.style.zIndex=3000;start={px:e.clientX,py:e.clientY,...w.layout};});
    handle.addEventListener('pointermove',e=>{if(!start)return;if(mode==='move'){w.layout.x=start.x+e.clientX-start.px;w.layout.y=start.y+e.clientY-start.py;}else w.layout.scale=start.scale+Math.max((e.clientX-start.px)/bw,(e.clientY-start.py)/bh);apply();});
    const end=()=>{if(!start)return;start=null;persist();};handle.addEventListener('pointerup',end);handle.addEventListener('pointercancel',end);
    handle.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();const d=['ArrowRight','ArrowDown'].includes(e.key)?1:-1;if(mode==='size')w.layout.scale+=d*.05;else w.layout[e.key==='ArrowLeft'||e.key==='ArrowRight'?'x':'y']+=d*10;apply();persist();});
+  }
+  let drag=null,moved=false;
+  function dragStart(x,y){drag={px:x,py:y,...w.layout};moved=false;outer.style.zIndex=3000;}
+  function dragMove(x,y,factor=1){if(!drag)return;const dx=(x-drag.px)*factor,dy=(y-drag.py)*factor;if(Math.hypot(dx,dy)<5&&!moved)return;moved=true;w.layout.x=drag.x+dx;w.layout.y=drag.y+dy;apply();}
+  function dragEnd(){if(drag&&moved)persist();drag=null;}
+  if(id==='character')window.addEventListener('message',e=>{if(e.origin!==location.origin||e.source!==item.contentWindow||e.data?.type!=='picnic-character-drag')return;const d=e.data;if(d.phase==='start')dragStart(d.x,d.y);else if(d.phase==='move')dragMove(d.x,d.y);else dragEnd();});
+  else{
+   const surface=id==='ball'?item.querySelector('.ball-oracle'):item;
+   surface.style.touchAction='none';
+   surface.addEventListener('pointerdown',e=>{if(e.button!==0)return;dragStart(e.clientX,e.clientY);surface.setPointerCapture(e.pointerId);});
+   surface.addEventListener('pointermove',e=>dragMove(e.clientX,e.clientY));
+   surface.addEventListener('pointerup',dragEnd);surface.addEventListener('pointercancel',dragEnd);
+   surface.addEventListener('click',e=>{if(moved){e.preventDefault();e.stopImmediatePropagation();moved=false;}},true);
   }
   window.addEventListener('resize',apply);
  }

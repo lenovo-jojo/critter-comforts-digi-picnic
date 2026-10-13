@@ -718,5 +718,19 @@ let sunshinePlayer;
 window.onYouTubeIframeAPIReady=()=>{sunIframe.src=sunIframe.dataset.src.replace('autoplay=1','autoplay=0')+'&origin='+encodeURIComponent(location.origin);sunshinePlayer=new YT.Player('sun-yt',{events:{onStateChange:e=>{if(e.data===YT.PlayerState.PAUSED||e.data===YT.PlayerState.ENDED)document.getElementById('sun-video-overlay').style.display='none';}}});};
 const sunAPI=document.createElement('script');sunAPI.src='https://www.youtube.com/iframe_api';document.head.append(sunAPI);
 </script>
+
+<script>
+if(document.documentElement.classList.contains('companion-mode')){
+ for(const character of document.querySelectorAll('.me-img,#me-bob-video')){let start=null,moved=false;
+ const report=(phase,e)=>parent.postMessage({type:'picnic-character-drag',phase,x:e.screenX,y:e.screenY},location.origin);
+ character.style.touchAction='none';
+ character.addEventListener('dragstart',e=>e.preventDefault());
+ character.addEventListener('pointerdown',e=>{if(e.button!==0)return;start={x:e.screenX,y:e.screenY};moved=false;character.setPointerCapture(e.pointerId);report('start',e);});
+ character.addEventListener('pointermove',e=>{if(!start)return;if(Math.hypot(e.screenX-start.x,e.screenY-start.y)>5)moved=true;report('move',e);});
+ const end=e=>{if(!start)return;report('end',e);start=null;};character.addEventListener('pointerup',end);character.addEventListener('pointercancel',end);
+ character.addEventListener('click',e=>{if(moved){e.preventDefault();e.stopImmediatePropagation();moved=false;}},true);
+ }
+}
+</script>
 </body>
 </html>
