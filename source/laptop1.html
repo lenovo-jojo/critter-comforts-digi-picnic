@@ -847,7 +847,7 @@ companionFrame.addEventListener('load',syncCompanionTheme);
 applyOSTheme(document.documentElement.dataset.osTheme||'bow');
 </script>
 <style id="movable-desktop-items">
-.free-widget{position:absolute!important;left:var(--widget-x)!important;top:var(--widget-y)!important;right:auto!important;bottom:auto!important;width:var(--widget-w)!important;height:var(--widget-h)!important;max-width:none!important;max-height:none!important;touch-action:none}
+.free-widget,#win-8ball.free-widget{position:absolute!important;left:var(--widget-x)!important;top:var(--widget-y)!important;right:auto!important;bottom:auto!important;width:var(--widget-w)!important;height:var(--widget-h)!important;max-width:none!important;max-height:none!important;touch-action:none}
 .widget-inner{position:absolute;inset:0 auto auto 0;transform:scale(var(--widget-scale,1));transform-origin:top left}
 .widget-inner>.desktop-note,.widget-inner>#os-companion{position:relative!important;left:0!important;top:0!important;right:auto!important;bottom:auto!important;margin:0;max-width:none!important;display:block!important}
 .widget-move,.widget-size{position:absolute;z-index:12;border:1px solid #80566880;background:#fff0f8d9;color:#805668;border-radius:4px;opacity:0;touch-action:none;padding:0;display:grid;place-items:center}
@@ -870,7 +870,7 @@ applyOSTheme(document.documentElement.dataset.osTheme||'bow');
   outer.classList.add('free-widget');outer.dataset.freeWidget='yes';
   const w={id,outer,bw,bh,layout:saved[id]||{x:ball?(parseFloat(item.style.left)||180):rect.left-rr.left,y:ball?(parseFloat(item.style.top)||90):rect.top-rr.top,scale:1}};widgets.push(w);
   function apply(){const l=w.layout;l.scale=Math.max(.45,Math.min(2,Number(l.scale)||1,(root.clientWidth-24)/bw,(root.clientHeight-100)/bh));l.x=Math.max(12,Math.min(root.clientWidth-bw*l.scale-12,Number(l.x)||12));l.y=Math.max(48,Math.min(root.clientHeight-bh*l.scale-64,Number(l.y)||48));for(const [n,v] of Object.entries({'x':l.x+'px','y':l.y+'px','w':bw*l.scale+'px','h':bh*l.scale+'px','scale':l.scale}))outer.style.setProperty('--widget-'+n,v);}
-  apply();
+  w.apply=apply;apply();
   for(const mode of ['move','size']){const handle=document.createElement('button');handle.type='button';handle.className='widget-'+mode;handle.textContent=mode==='move'?'✥':'↘';handle.setAttribute('aria-label',(mode==='move'?'Move ':'Resize ')+id);outer.append(handle);let start=null;
    handle.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();handle.setPointerCapture(e.pointerId);outer.style.zIndex=3000;start={px:e.clientX,py:e.clientY,...w.layout};});
    handle.addEventListener('pointermove',e=>{if(!start)return;if(mode==='move'){w.layout.x=start.x+e.clientX-start.px;w.layout.y=start.y+e.clientY-start.py;}else w.layout.scale=start.scale+Math.max((e.clientX-start.px)/bw,(e.clientY-start.py)/bh);apply();});
@@ -879,6 +879,30 @@ applyOSTheme(document.documentElement.dataset.osTheme||'bow');
   }
   window.addEventListener('resize',apply);
  }
+ // Keep the opening arrangement clear of chrome, icons, windows, and other props.
+ function arrangeOpening(){
+  const rr=root.getBoundingClientRect(),gap=18,pad=24;
+  const occupied=Array.from(root.querySelectorAll('.icon,.window:not(#win-8ball)')).filter(e=>e.getClientRects().length&&getComputedStyle(e).display!=='none').map(e=>{const r=e.getBoundingClientRect();return {x:r.left-rr.left,y:r.top-rr.top,w:r.width,h:r.height};});
+  const clear=(r)=>r.x>=pad&&r.y>=56&&r.x+r.w<=root.clientWidth-pad&&r.y+r.h<=root.clientHeight-80&&occupied.every(b=>r.x+r.w+gap<=b.x||b.x+b.w+gap<=r.x||r.y+r.h+gap<=b.y||b.y+b.h+gap<=r.y);
+  // The character frame reserves room for her speech bubble as well as her sprite.
+  for(const w of [...widgets].sort((a,b)=>({character:0,note:1,ball:2}[a.id]-{character:0,note:1,ball:2}[b.id]))){
+   let found=null;const initial=root.clientWidth<=600&&w.id==='character'?Math.min(.5,w.layout.scale):w.layout.scale;
+   for(const scale of [...Array.from({length:Math.max(1,Math.ceil((initial-.45)/.08))},(_,i)=>initial-i*.08),.45]){
+    if(found)break;
+    const width=w.bw*scale,height=w.bh*scale;
+    const preferred=root.clientWidth<=600&&w.id==='character'?{x:pad,y:root.clientHeight-80-height,w:width,h:height}:{x:w.layout.x,y:w.layout.y,w:width,h:height};
+    if(clear(preferred)){found={x:preferred.x,y:preferred.y,scale};break;}
+    for(let y=root.clientHeight-80-height;y>=56&&!found;y-=12)for(let x=pad;x<=root.clientWidth-pad-width;x+=12){if(clear({x,y,w:width,h:height})){found={x,y,scale};break;}}
+   }
+   if(found){w.layout=found;w.apply();occupied.push({x:found.x,y:found.y,w:w.bw*found.scale,h:w.bh*found.scale});}
+  }
+  persist();
+ }
+ arrangeOpening();
+ const openingObserver=new ResizeObserver(()=>requestAnimationFrame(arrangeOpening));document.querySelectorAll('.window:not(#win-8ball)').forEach(e=>openingObserver.observe(e));
+ window.addEventListener('resize',()=>requestAnimationFrame(arrangeOpening));
+ window.addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.type==='picnic-video-size')requestAnimationFrame(arrangeOpening);});
+ document.querySelectorAll('.icon').forEach(e=>e.addEventListener('click',()=>requestAnimationFrame(arrangeOpening)));
 })();
 </script>
 </body>
