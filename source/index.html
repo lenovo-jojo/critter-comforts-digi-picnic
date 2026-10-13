@@ -4,7 +4,7 @@
 <head><script>const companionMode=new URLSearchParams(location.search).has("companion");if(companionMode){document.documentElement.classList.add("companion-mode");try{document.documentElement.dataset.osTheme=parent.document.documentElement.dataset.osTheme||"bow";}catch(_){}}</script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>digi picnic</title>
+  <title>jolie’s digital picnic</title>
   <link rel="icon" href="/assets/tab.png" type="image/png"/>
   <link href="/style.css" rel="stylesheet" type="text/css"/>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet"/>
@@ -169,7 +169,7 @@
       <img src="/assets/sunshine.png" alt="sun" style="width:100%;height:auto"/>
       <div id="sun-video-overlay">
         <iframe id="sun-yt"
-          data-src="https://www.youtube.com/embed/XC7H7FtUhJc?autoplay=1&mute=1&rel=0&controls=0&modestbranding=1&playsinline=1"
+          data-src="https://www.youtube.com/embed/XC7H7FtUhJc?autoplay=1&mute=1&rel=0&controls=1&playsinline=1&enablejsapi=1"
           allow="autoplay; encrypted-media" allowfullscreen></iframe>
       </div>
     </div>
@@ -397,7 +397,7 @@
       if(companionMode){const r=activeImg.getBoundingClientRect();speechEl.style.left=(r.left+r.width/2)+"px";speechEl.style.top=(r.top-14)+"px";return;}
       const r = activeImg.getBoundingClientRect();
       const x = r.left + r.width * 0.5; const y = r.top - 8;
-      speechEl.style.left = `${x}px`; speechEl.style.top = `${y}px`;
+      const half=speechEl.offsetWidth/2;const safeX=Math.max(half+20,Math.min(innerWidth-half-20,x));speechEl.style.left=safeX+'px';speechEl.style.top=Math.max(speechEl.offsetHeight+22,y)+'px';
 
     }
     function showTapIndicator(show){ tapIndEl.style.visibility = show && !characterChatActive ? "visible" : "hidden"; }
@@ -446,8 +446,8 @@
     const sunIframe  = document.getElementById('sun-yt');
     function toggleSun(){if(!sunIframe.getAttribute('src'))sunIframe.src=sunIframe.dataset.src;
       const visible = sunOverlay.style.display === 'block';
-      if (visible) { const url = sunIframe.src; sunIframe.src = 'about:blank'; sunOverlay.style.display = 'none'; setTimeout(() => { sunIframe.src = url; }, 50); }
-      else { sunOverlay.style.display = 'block'; }
+      if(visible){sunOverlay.style.display='none';if(sunshinePlayer?.pauseVideo)sunshinePlayer.pauseVideo();}
+      else{sunOverlay.style.display='block';if(sunshinePlayer?.playVideo)sunshinePlayer.playVideo();}
     }
 
     /* helpers */
@@ -607,15 +607,15 @@ function nextLine(){clearTimeout(lineTimer);const line=pendingLines.shift();if(l
 function addMessage(who,text){if(who==='AI'){clearTimeout(lineTimer);pendingLines=sequence(text);nextLine();}}
 window.addEventListener('picnic-line-done',()=>{if(pendingLines.length)lineTimer=setTimeout(nextLine,1800);});
 window.addEventListener('picnic-chat-closed',()=>{clearTimeout(lineTimer);pendingLines=[];conversationRevision++;});
-async function loadModel(){if(engine||loading)return;loading=true;retry.hidden=true;status.textContent='loading qwen3 4b on your device… first download takes a few minutes.';input.placeholder='loading conversation model…';
+async function loadModel(){if(engine||loading)return;loading=true;retry.hidden=true;status.textContent='loading qwen3 1.7b on your device… first download takes a few minutes.';input.placeholder='loading conversation model…';
 try{if(!navigator.gpu)throw new Error('This browser does not support WebGPU. Try a recent Chrome or Edge on a computer.');
 const webllm=await import('https://esm.run/@mlc-ai/web-llm@0.2.85');
-const model=webllm.prebuiltAppConfig.model_list.find(m=>m.model_id==='Qwen3-4B-q4f16_1-MLC');if(!model)throw new Error('The conversation model is unavailable.');
+const model=webllm.prebuiltAppConfig.model_list.find(m=>m.model_id==='Qwen3-1.7B-q4f16_1-MLC');if(!model)throw new Error('The conversation model is unavailable.');
 const workerSource="import {WebWorkerMLCEngineHandler} from 'https://esm.run/@mlc-ai/web-llm@0.2.85';const handler=new WebWorkerMLCEngineHandler();self.onmessage=event=>handler.onmessage(event);";
 engine=await webllm.CreateWebWorkerMLCEngine(new Worker(URL.createObjectURL(new Blob([workerSource],{type:'text/javascript'})),{type:'module'}),model.model_id,{initProgressCallback:p=>{status.textContent=p.text;input.placeholder='loading '+Math.round(p.progress*100)+'%…';}});
 status.textContent='Ready ♡ AI replies run on your device.';input.disabled=false;input.placeholder='';send.disabled=false;input.focus();
 }catch(error){status.textContent=error.message||'Could not load the AI. Please try again.';input.placeholder='could not load — try again';retry.hidden=false;}finally{loading=false;}}
-function loadAI(){history.push({role:'assistant',content:"hey! what's up?"});input.disabled=false;send.disabled=false;input.placeholder='';status.textContent='Ready ♡';input.focus();addMessage('AI',"hey! what's up?");}
+function loadAI(){history.push({role:'assistant',content:"what's up?"});input.disabled=false;send.disabled=false;input.placeholder='';status.textContent='Ready ♡';input.focus();addMessage('AI',"what's up?");}
 document.getElementById('chatty-trigger').addEventListener('click',e=>{e.stopPropagation();window.picnicCharacterChat();composer.hidden=false;window.dispatchEvent(new Event('resize'));loadAI();});
 retry.addEventListener('click',loadModel);
 composer.addEventListener('click',e=>e.stopPropagation());
@@ -694,5 +694,28 @@ html:not(.companion-mode) .sunshine,html:not(.companion-mode) .logo-circle{width
 </style>
 <style>.laptop{image-rendering:pixelated}.boombox.sleeping img{clip-path:inset(0 12% 15% 12%)}.laptop-frame,.laptop-frame iframe{image-rendering:pixelated}</style>
 <style>.boombox.sleeping{animation:none!important}#zzz{display:none!important}</style>
+<style id="picnic-polish">
+.main-container{perspective:none}html:not(.companion-mode) .main-container{overflow:clip}html,body{overflow:hidden}.speech{white-space:normal}#speech-text{white-space:pre-wrap}
+@media(max-width:600px){html:not(.companion-mode) .me-img{width:180px}html:not(.companion-mode) .laptop{width:96px}html:not(.companion-mode) .boombox{width:105px}}
+html:not(.companion-mode) .logo-circle{width:clamp(100px,12vw,170px);right:12%;top:10%}
+.logo-img{position:relative;top:-5%;transform:translateY(-5%)}
+html:not(.companion-mode) .phone-img{transform:translate(-50%,-50%) perspective(400px) rotateY(-22deg) rotateZ(-9deg);filter:drop-shadow(5px 8px 3px #33425955)}
+html:not(.companion-mode) .phone-img:hover{transform:translate(-50%,-50%) perspective(400px) rotateY(-15deg) rotateZ(-7deg) scale(1.08)}
+html:not(.companion-mode) .cam-img{filter:drop-shadow(4px 7px 3px #33425955)}
+html:not(.companion-mode) .laptop{filter:grayscale(.2) drop-shadow(5px 9px 4px #33425944)}
+html:not(.companion-mode) .boombox{filter:drop-shadow(4px 7px 3px #33425955)}
+html:not(.companion-mode) .boombox.sleeping{filter:grayscale(1) drop-shadow(4px 7px 3px #33425955)}
+html:not(.companion-mode) .speech{max-height:42dvh;overflow:auto;width:min(590px,calc(100vw - 40px));padding:16px 20px;line-height:1.5}
+#ai-form{gap:12px;align-items:center}#ai-input{min-width:0}#ai-send{padding:8px}#close-speech{right:8px;top:8px}
+.cam-frame{background:transparent!important;box-shadow:none!important;border-radius:24px!important;width:min(1000px,94vw)!important;height:min(720px,85dvh)!important}
+#close-cam{display:none}
+@media(max-width:600px){html:not(.companion-mode) .logo-circle{width:72px;right:12%;top:11%}html:not(.companion-mode) .speech{font-size:10px;max-height:34dvh;padding:14px 16px}.cam-frame{height:80dvh!important}}
+</style>
+<script>
+// YouTube's player events restore the sunshine face when playback pauses.
+let sunshinePlayer;
+window.onYouTubeIframeAPIReady=()=>{sunIframe.src=sunIframe.dataset.src.replace('autoplay=1','autoplay=0')+'&origin='+encodeURIComponent(location.origin);sunshinePlayer=new YT.Player('sun-yt',{events:{onStateChange:e=>{if(e.data===YT.PlayerState.PAUSED||e.data===YT.PlayerState.ENDED)document.getElementById('sun-video-overlay').style.display='none';}}});};
+const sunAPI=document.createElement('script');sunAPI.src='https://www.youtube.com/iframe_api';document.head.append(sunAPI);
+</script>
 </body>
 </html>
