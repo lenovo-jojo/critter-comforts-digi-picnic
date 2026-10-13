@@ -525,17 +525,8 @@
       document.getElementById('music-no').addEventListener('click',()=>{popup.style.display='none';try{localStorage.setItem('picnic_aux_choice','no');}catch(_){} });
       let auxChoice=null;try{auxChoice=localStorage.getItem('picnic_aux_choice');}catch(_){}
       if(companionMode)popup.style.display='none';else if(auxChoice==='yes')acceptAux();else if(auxChoice==='no')popup.style.display='none';else popup.style.display='flex';
-      if(companionMode){hasStarted=false;idx=-1;speechEl.style.display='none';}
-      else{
-        hasStarted=true;idx=0;
-        // Typing begins immediately, even while the browser is unlocking audio.
-        ensureAudioReady().catch(()=>{});
-        typeWriter(lines[0]);
-        const unlockGreetingAudio=()=>{ensureAudioReady().catch(()=>{});};
-        window.addEventListener('pointerdown',unlockGreetingAudio,{once:true});
-        window.addEventListener('keydown',unlockGreetingAudio,{once:true});
-      }
-
+      // A character click unlocks audio and starts the greeting together.
+      hasStarted=false;idx=-1;speechEl.style.display='none';
 
       /* Keyboard */
       document.addEventListener('keydown', (e) => {
