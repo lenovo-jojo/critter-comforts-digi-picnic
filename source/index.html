@@ -657,40 +657,5 @@ html.companion-mode:not([data-os-theme="bow"]) .speech{box-shadow:0 0 0 2px var(
 html.companion-mode:not([data-os-theme="bow"]) .speech::after{background:var(--companion-paper)!important;box-shadow:0 0 0 2px var(--companion-type)!important}
 html.companion-mode:not([data-os-theme="bow"]) .me-img{filter:grayscale(1)}
 html.companion-mode[data-os-theme="glasses"] .me-img{filter:grayscale(1) sepia(1) saturate(3) hue-rotate(75deg)}
-</style><style>.pixel-original{opacity:0!important}</style>
-<script>
-// Render animated scene artwork on a small pixel grid without changing its controls.
-window.addEventListener('DOMContentLoaded',()=>{
-  const artwork=[...document.querySelectorAll('.laptop,.cam-img,.phone-img,.me-img:not(video),.boombox img,.sunshine>img,.logo-img')];
-  const layers=artwork.map(img=>{
-    const canvas=document.createElement('canvas');
-    canvas.setAttribute('aria-hidden','true');
-    canvas.style.cssText='position:fixed;pointer-events:none;image-rendering:pixelated;visibility:visible;';
-    img.insertAdjacentElement('afterend',canvas);
-    img.classList.add('pixel-original');
-    return {img,canvas,ctx:canvas.getContext('2d')};
-  });
-  let last=0;
-  function paint(now){
-    if(now-last>50){last=now;
-      layers.forEach(({img,canvas,ctx})=>{
-        const r=img.getBoundingClientRect(),style=getComputedStyle(img);
-        canvas.style.display=style.display==='none'||!r.width?'none':'block';
-        if(!r.width||!img.complete||!img.naturalWidth)return;
-        const step=img.classList.contains('laptop')?2:1.5;
-        canvas.width=Math.max(1,Math.round(r.width/step));
-        canvas.height=Math.max(1,Math.round(r.height/step));
-        canvas.style.left=r.left+'px';canvas.style.top=r.top+'px';
-        canvas.style.width=r.width+'px';canvas.style.height=r.height+'px';
-        canvas.style.opacity=img.style.opacity||'1';canvas.style.filter=style.filter;
-        canvas.style.zIndex=style.zIndex==='auto'?getComputedStyle(img.parentElement).zIndex:style.zIndex;
-        ctx.drawImage(img,0,0,canvas.width,canvas.height);
-      });
-    }
-    requestAnimationFrame(paint);
-  }
-  requestAnimationFrame(paint);
-});
-</script>
-</body>
+</style></body>
 </html>
