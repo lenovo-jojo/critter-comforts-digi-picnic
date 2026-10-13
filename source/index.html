@@ -615,7 +615,7 @@ const workerSource="import {WebWorkerMLCEngineHandler} from 'https://esm.run/@ml
 engine=await webllm.CreateWebWorkerMLCEngine(new Worker(URL.createObjectURL(new Blob([workerSource],{type:'text/javascript'})),{type:'module'}),model.model_id,{initProgressCallback:p=>{status.textContent=p.text;input.placeholder='loading '+Math.round(p.progress*100)+'%…';}});
 status.textContent='Ready ♡ AI replies run on your device.';input.disabled=false;input.placeholder='';send.disabled=false;input.focus();
 }catch(error){status.textContent=error.message||'Could not load the AI. Please try again.';input.placeholder='could not load — try again';retry.hidden=false;}finally{loading=false;}}
-function loadAI(){history.push({role:'assistant',content:'hey! what brought you here?'});input.disabled=false;send.disabled=false;input.placeholder='';status.textContent='Ready ♡';input.focus();addMessage('AI','hey! what brought you here?');}
+function loadAI(){history.push({role:'assistant',content:"hey! what's up?"});input.disabled=false;send.disabled=false;input.placeholder='';status.textContent='Ready ♡';input.focus();addMessage('AI',"hey! what's up?");}
 document.getElementById('chatty-trigger').addEventListener('click',e=>{e.stopPropagation();window.picnicCharacterChat();composer.hidden=false;window.dispatchEvent(new Event('resize'));loadAI();});
 retry.addEventListener('click',loadModel);
 composer.addEventListener('click',e=>e.stopPropagation());
