@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jolie's pix</title>
+  <link rel="icon" href="/assets/me-bub1.png" type="image/png" />
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+    }
+
+    .background {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: url('/assets/campov.gif') center center / cover no-repeat fixed;
+      z-index: -2;
+
+      image-rendering: pixelated;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+
+      background: rgba(150, 200, 255, 0.15); /* soft cool blue */
+      mix-blend-mode: soft-light;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .frame-container {
+      width: 34vw;
+      height: 54vh;
+      border-radius: 20px;
+      overflow: hidden;
+      background: white;
+      position: relative;
+      margin: auto;
+      top: 50%;
+      transform: translate(-2%, -50%);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      z-index: 0;
+    }
+
+    .frame-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+      position: relative;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="background"></div>
+  <div class="overlay"></div>
+
+  <div class="frame-container">
+    <iframe 
+      src="https://joliesarro9021.myportfolio.com/prints" 
+      allowfullscreen 
+      loading="lazy"
+      title="jolie's pix"
+    ></iframe>
+  </div>
+
+</body>
+</html>

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>jolie's virtual picnic</title>
+  <title>digi picnic</title>
   <link rel="icon" href="/assets/tab.png" type="image/png"/>
   <link href="/style.css" rel="stylesheet" type="text/css"/>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet"/>
@@ -138,7 +138,9 @@
       .sunshine,.logo-img,.hoop-text,.boombox.sleeping{ animation:none !important; }
       .speech .tap-indicator{ animation:none !important; opacity:.7; }
     }
-  </style>
+  .laptop-frame iframe{position:absolute;inset:0;display:block;}
+.close-laptop{position:absolute;right:10px;top:10px;z-index:10;border:1px solid #c59aaa;background:#fffaf2;color:#805668;border-radius:5px;width:25px;height:25px;cursor:pointer;}
+</style>
 </head>
 <body>
   <div class="main-container">
@@ -152,15 +154,14 @@
     <img src="/assets/me-idle.gif" alt="me" class="me-img" id="me-img-a"/>
     <img src="/assets/me-idle.gif" alt="" class="me-img" id="me-img-b" aria-hidden="true" style="display:none; opacity:0;"/>
     <video id="me-bob-video" class="me-img" muted loop playsinline style="display:none; opacity:0;">
-      <source src="/assets/me-bob.webm" type="video/webm"/>
-      <source src="/assets/me-bob.mp4" type="video/mp4"/>
     </video>
 
     <img src="/assets/boombox.png" alt="boombox" id="boombox" class="boombox" onclick="toggleMusic()"/>
     <div id="zzz" class="zzz">z z z ...</div>
 
-    <div id="speech" class="speech">
-      <span id="speech-text"></span>
+    <div id="speech" class="speech"><button id="close-speech" type="button" aria-label="Close chat bubble">×</button>
+      <span id="speech-text"></span><button id="chatty-trigger" type="button">feeling chatty?</button>
+      <div id="character-composer" hidden><form id="ai-form"><input id="ai-input" aria-label="Chat with the character" placeholder="" maxlength="1500" disabled><button id="ai-send" disabled>send</button></form><p id="ai-status" role="status"></p><button id="ai-retry" hidden>try again</button></div>
       <div id="tap-ind" class="tap-indicator">▸</div>
     </div>
 
@@ -172,8 +173,6 @@
           allow="autoplay; encrypted-media" allowfullscreen></iframe>
       </div>
     </div>
-
-    <img src="/assets/blank.png" class="floating-sticker" style="position:absolute; bottom:10%; right:5%"/>
 
     <div class="logo-circle">
       <img src="/assets/heart-logo.png" alt="logo" class="logo-img"/>
@@ -202,7 +201,7 @@
   <div id="laptop-overlay">
     <div class="laptop-frame">
       <button class="close-laptop" id="close-laptop">✖</button>
-      <iframe src="laptop1.html" title="Laptop"></iframe>
+      <iframe src="/laptop1?v=20261012-popout" title="Laptop" allow="fullscreen" allowfullscreen></iframe>
     </div>
   </div>
 
@@ -215,11 +214,11 @@
     </div>
   </div>
 
-  <div id="music-popup">
+  <div id="music-popup" style="display:none">
     <div class="popup-bubble">
-      <p>hi! welcome to my virtual picnic.<br/>can i have the aux?👉👈</p>
-      <button id="music-yes">yes</button>
-      <button id="music-no">no</button>
+      <img src="/assets/me-idle.gif" alt="jolie" width="64" height="64" style="object-fit:contain"><p>hey! come hang out :3<br/>want some music?</p>
+      <button id="music-yes" onclick="this.closest('#music-popup').style.display='none'">yes ♡</button>
+      <button id="music-no" onclick="this.closest('#music-popup').style.display='none'">maybe later</button>
     </div>
   </div>
 
@@ -386,13 +385,21 @@
       const r = activeImg.getBoundingClientRect();
       const x = r.left + r.width * 0.5; const y = r.top - 8;
       speechEl.style.left = `${x}px`; speechEl.style.top = `${y}px`;
+
     }
-    function showTapIndicator(show){ tapIndEl.style.visibility = show ? "visible" : "hidden"; }
+    function showTapIndicator(show){ tapIndEl.style.visibility = show && !characterChatActive ? "visible" : "hidden"; }
     function isBetweenLines(){ return speechEl.style.display === 'block' && !isTyping; }
-    function finishTypingNow(){ if (!isTyping) return; clearInterval(typingInterval); speechTextEl.textContent = currentFullText; isTyping = false; showTapIndicator(true); setMeMode('idle'); }
+    let characterChatActive=false;
+    let introComplete=false;try{introComplete=localStorage.getItem('picnic_intro_complete')==='yes';}catch(_){}
+    function rememberIntro(){introComplete=true;try{localStorage.setItem('picnic_intro_complete','yes');}catch(_){} }
+
+    window.picnicCharacterReply=async text=>{await ensureAudioReady();typeWriter(text.toLowerCase());};
+    window.picnicCharacterChat=()=>{ensureAudioReady();characterChatActive=true;finishTypingNow();showTapIndicator(false);document.getElementById("chatty-trigger").style.display="none";};
+    function syncChatty(){if(currentFullText.includes('take a load off')&&!isTyping)rememberIntro();document.getElementById('chatty-trigger').style.display=introComplete&&!characterChatActive?'block':'none';}
+    function finishTypingNow(){ if (!isTyping) return; clearInterval(typingInterval); speechTextEl.textContent = currentFullText; isTyping = false; showTapIndicator(true); setMeMode('idle'); syncChatty(); }
     function typeWriter(text, speed = 28){
-      isTyping = true; currentFullText = text; speechTextEl.textContent = ""; speechEl.style.display = "block"; showTapIndicator(false); positionSpeechBubble();
-      setMeMode('talk');
+      isTyping = true; currentFullText = text; syncChatty(); speechTextEl.textContent = ""; speechEl.style.display = "block"; showTapIndicator(false); positionSpeechBubble();
+      clearIdle2Timer();clearBobDanceTimer();setMeMode('talk');
       const chars = Array.from(text); let i = 0;
       clearInterval(typingInterval);
       typingInterval = setInterval(() => {
@@ -403,6 +410,7 @@
     function showLine(){
       const text = lines[idx % lines.length];
       if (text == null){
+        if(introComplete&&!characterChatActive){currentFullText='';speechTextEl.textContent='';speechEl.style.display='block';isTyping=false;showTapIndicator(false);setMeMode('idle');syncChatty();positionSpeechBubble();return;}
         speechEl.style.display = 'none'; isTyping = false; showTapIndicator(false); setMeMode('idle');
         if (isPlaying){ startBobDanceCycle(); } else { scheduleIdle2Timer(); }
         return;
@@ -410,12 +418,15 @@
       typeWriter(text);
     }
     async function startOrAdvanceDialogue(){
+      if(speechEl.style.display==='none' && characterChatActive){speechEl.style.display='block';positionSpeechBubble();document.getElementById('ai-input').focus();return;}
+      if(characterChatActive){if(isTyping)finishTypingNow();window.dispatchEvent(new Event('picnic-next-message'));return;}
       await ensureAudioReady();
       if (!hasStarted){ hasStarted = true; idx = 0; showLine(); return; }
       if (isTyping){ finishTypingNow(); return; }
       idx = (idx + 1) % lines.length; showLine();
     }
 
+    document.getElementById('close-speech').addEventListener('click',e=>{e.stopPropagation();if(isTyping)finishTypingNow();speechEl.style.display='none';setMeMode('idle');});
     /* Sun overlay toggle */
     const sunOverlay = document.getElementById('sun-video-overlay');
     const sunIframe  = document.getElementById('sun-yt');
@@ -450,7 +461,7 @@
       clearIdle2Timer(); startBobDanceCycle();
     }
     function toggleMusic(){
-      if (!widget) return;
+      if (!widget){document.getElementById('music-popup').style.display='flex';return;}
       if (!isPlaying) {
         if (!widgetReady) { widget.play(); boombox.src = '/assets/boombox.gif?' + Date.now(); isPlaying = true; }
         else { playNext(); }
@@ -462,7 +473,7 @@
       }
     }
 
-    window.addEventListener('load', () => {
+    window.addEventListener('DOMContentLoaded', () => {
       boombox = document.getElementById('boombox');
       meImgA  = document.getElementById('me-img-a');
       meImgB  = document.getElementById('me-img-b');
@@ -474,7 +485,7 @@
 
       /* Music gate */
       const popup = document.getElementById('music-popup');
-      document.getElementById('music-yes').addEventListener('click', () => {
+      function acceptAux(){
         popup.style.display = 'none'; if (hint) hint.style.display = 'block';
         const scIframe = document.getElementById('sc-player');
         scIframe.src = "https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/joliesarro/sets/10_yr_town&color=%23ff99cc&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&visual=false";
@@ -493,11 +504,23 @@
             isPlaying = false; clearBobDanceTimer(); setMeMode('idle'); boombox.classList.add('sleeping'); zzz.style.display = 'block'; scheduleIdle2Timer();
           });
         };
-      });
-      document.getElementById('music-no').addEventListener('click', () => { popup.style.display = 'none'; });
+      }
+      document.getElementById('music-yes').addEventListener('click',()=>{try{localStorage.setItem('picnic_aux_choice','yes');}catch(_){}acceptAux();});
+      document.getElementById('music-no').addEventListener('click',()=>{popup.style.display='none';try{localStorage.setItem('picnic_aux_choice','no');}catch(_){} });
+      let auxChoice=null;try{auxChoice=localStorage.getItem('picnic_aux_choice');}catch(_){}
+      if(auxChoice==='yes')acceptAux();else if(auxChoice==='no')popup.style.display='none';else popup.style.display='flex';
+      // Every visit starts the original intro; completed visitors can jump to AI chat.
+      hasStarted=true;idx=0;currentFullText=lines[0];speechTextEl.textContent=currentFullText;speechEl.style.display='block';showTapIndicator(true);syncChatty();positionSpeechBubble();
+      let greetingSpoken=false;
+      async function greetWithVoice(){if(greetingSpoken||characterChatActive)return;await ensureAudioReady();if(greetingSpoken||characterChatActive||idx!==0)return;greetingSpoken=true;typeWriter(lines[0]);}
+      greetWithVoice().catch(()=>{});
+      window.addEventListener('pointerdown',()=>{greetWithVoice().catch(()=>{});},{once:true});
+      window.addEventListener('keydown',()=>{greetWithVoice().catch(()=>{});},{once:true});
+
 
       /* Keyboard */
       document.addEventListener('keydown', (e) => {
+        if (e.target.closest('input,textarea,select,[contenteditable]')) return;
         if (e.code === 'Space') { e.preventDefault(); playNext(); }
         if (e.key === 'Escape') {
           closeCam();
@@ -543,5 +566,50 @@
       window.addEventListener('resize', positionSpeechBubble);
     });
   </script>
-</body>
+
+<style>
+#chatty-trigger{display:none;margin:10px 0 0;background:#000;color:white;border:1px solid white;padding:8px;font:inherit;cursor:pointer;}
+#character-composer{position:fixed;z-index:10001;transform:translateX(-50%);max-width:calc(100vw - 24px);background:#000;color:#fff;padding:10px;box-shadow:0 0 0 2px white,0 0 0 6px black;font:16px VT323,monospace;}
+#character-composer[hidden]{display:none;}#ai-form{display:flex;gap:8px;}#ai-input{flex:1;min-width:0;background:black;color:white;border:1px solid white;padding:8px;font:18px VT323,monospace;}#character-composer button{background:black;color:white;border:1px solid white;font:16px VT323,monospace;cursor:pointer;}#character-composer button:disabled{opacity:.5;}#ai-status{margin:7px 0 0;font:14px VT323,monospace;overflow-wrap:anywhere;}#character-composer small{display:block;margin-bottom:7px;font-size:13px;}
+</style><script type="module">
+const composer=document.getElementById('character-composer'),status=document.getElementById('ai-status'),input=document.getElementById('ai-input'),send=document.getElementById('ai-send'),retry=document.getElementById('ai-retry');
+let engine,loading=false,busy=false;
+const history=[{role:'system',content:"You are a friendly character at a virtual picnic, chatting with the visitor. Reply in lowercase with one short natural sentence. Read their whole message and recent conversation. Build on the specific facts they have shared. Be curious about one detail that is still unknown. Acknowledge what they say, then ask a relevant follow-up when it fits. Treat the visitor’s stated plans, destination, and experiences as established facts. Website facts: click the boombox to start music. The laptop has snake, tarot, a chatroom, and tv. The phone has Jolie’s socials and LinkedIn. Use website facts when relevant to the visitor’s question."}];
+function addMessage(who,text){if(who==='AI')window.picnicCharacterReply(text);}
+async function loadModel(){if(engine||loading)return;loading=true;retry.hidden=true;status.textContent='Loading the AI on your device… the first download may take a few minutes.';input.placeholder='loading conversation model…';
+try{if(!navigator.gpu)throw new Error('This browser does not support WebGPU. Try a recent Chrome or Edge on a computer.');
+const webllm=await import('https://esm.run/@mlc-ai/web-llm@0.2.85');
+const model=webllm.prebuiltAppConfig.model_list.find(m=>m.model_id==='SmolLM2-360M-Instruct-q4f16_1-MLC');if(!model)throw new Error('The conversation model is unavailable.');
+engine=await webllm.CreateMLCEngine(model.model_id,{initProgressCallback:p=>{status.textContent=p.text;input.placeholder='loading '+Math.round(p.progress*100)+'%…';}});
+status.textContent='Ready ♡ AI replies run on your device.';input.disabled=false;input.placeholder='';send.disabled=false;input.focus();
+}catch(error){status.textContent=error.message||'Could not load the AI. Please try again.';input.placeholder='could not load — try again';retry.hidden=false;}finally{loading=false;}}
+function loadAI(){input.disabled=false;send.disabled=false;input.placeholder='';status.textContent='Ready ♡';input.focus();addMessage('AI','hey! what brought you here?');}
+document.getElementById('chatty-trigger').addEventListener('click',e=>{e.stopPropagation();window.picnicCharacterChat();composer.hidden=false;window.dispatchEvent(new Event('resize'));loadAI();});
+retry.addEventListener('click',loadModel);
+composer.addEventListener('click',e=>e.stopPropagation());
+ const curiousQuestions=['what brought you here?','what’s your vibe today?','what have you been into lately?','are you here to chill or explore?'];let curiosityIndex=0;
+function groundedReply(text,continuation){
+ if(continuation)return curiousQuestions[curiosityIndex++%curiousQuestions.length];
+ if(/\b(airport|flight|flying|travel|trip)\b/i.test(text))return 'ooh are you heading home or going somewhere new?';
+ if(/\b(hello|hi|hey)\b/i.test(text))return 'hey :3 what brought you here?';
+ if(/\b(tired|exhausted|long day)\b/i.test(text))return 'aw, what’s been keeping you busy?';
+ if(/\b(home|nashville)\b/i.test(text))return 'what do you like most about being home?';
+ if(/\b(bored|boring|game|games|play|watch|tv|computer|laptop)\b/i.test(text))return 'click the laptop for snake, tarot, and tv :3';
+ if(/\b(music|song|songs|boombox|boom box|listen|listening|audio)\b/i.test(text))return 'click the boombox to put some music on :3';
+ if(/\b(socials?|instagram|tumblr|pinterest|linkedin|contact)\b/i.test(text))return 'click the phone for my socials, including linkedin :3';
+ if(/(?:about (you|jolie)|who (are you|is jolie)|your (job|work|career|education)|where did you study|belmont)/i.test(text))return /study|education|school|belmont/i.test(text)?'jolie studied at belmont; her linkedin is in the phone.':'my linkedin is in the phone if you wanna know more :3';
+ return null;
+}
+async function requestReply(text,continuation=false){if(busy)return;busy=true;send.disabled=true;const previousLength=history.length;history.push({role:'user',content:continuation?'what would you like to ask me?':text});status.textContent='Thinking…';try{const quick=groundedReply(text,continuation);if(quick){history.push({role:'assistant',content:quick});addMessage('AI',quick);status.textContent='Ready ♡';return;}await loadModel();if(!engine)throw new Error('Model unavailable');const result=await engine.chat.completions.create({messages:[{role:'system',content:'Ask the visitor one short question about their latest message. Be curious about their interests or experiences. Write in lowercase. Reply with just the question, around 5 to 10 words.'},...history.slice(1).slice(-20)],max_tokens:180,temperature:0.5});let raw=(result.choices[0].message.content||'hmm, what do you think?').toLowerCase().trim();
+function completeThought(text){return text.match(/^[\s\S]*?[.!?](?:\s|$)/)?.[0].trim()||text;}
+let answer=completeThought(raw);if(!answer.endsWith('?')||/\b(click|started|playing|opened|booked)\b/i.test(answer)||answer.split(/\s+/).length>16)answer='what do you like about that?';
+history.push({role:'assistant',content:answer});addMessage('AI',answer);status.textContent='Ready ♡';}catch(_){history.splice(previousLength);status.textContent='That reply failed. Try again.';}finally{busy=false;send.disabled=false;if(!continuation)input.focus();}}
+window.addEventListener('picnic-next-message',()=>requestReply('',true));
+document.getElementById('ai-form').addEventListener('submit',e=>{e.preventDefault();const text=input.value.trim();if(!text||busy)return;input.value='';requestReply(text);});
+</script><style>
+#character-composer{position:static;transform:none;width:100%;max-width:none;background:transparent;padding:0;margin-top:14px;box-shadow:none;font:inherit;}
+#ai-form{display:flex;gap:12px;align-items:center;}#ai-input{border:0;border-bottom:1px solid #fff8;border-radius:0;padding:7px 0;font:16px VT323,monospace;background:transparent;}#ai-send{border:0!important;padding:7px 0;font:16px VT323,monospace!important;}#ai-status{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}#ai-retry{margin-top:8px;}
+</style><style>
+.speech{white-space:normal;padding:12px 18px;}#speech-text{display:block;white-space:pre-wrap;}#character-composer{margin-top:10px;}#ai-form{margin:0;} .speech:has(#character-composer:not([hidden])) .tap-indicator{display:none;}
+</style><style>#ai-input{caret-color:#fff;}</style><style>#close-speech{position:absolute;top:4px;right:5px;background:#000;color:#fff;border:0;font:20px VT323,monospace;padding:0 4px;cursor:pointer;line-height:1;}#speech-text{padding-right:14px;}</style><style>#music-popup{inset:auto 16px 16px auto;background:transparent;width:min(270px,calc(100vw - 32px));z-index:10002;pointer-events:none;}#music-popup .popup-bubble{pointer-events:auto;background:#ffeaf5;border:2px solid #ff99cc;border-radius:14px;padding:14px;text-align:center;box-shadow:3px 4px 0 #d46aa555;}#music-popup p{font:19px VT323,monospace;margin:5px 0;}#music-popup button{margin:5px;padding:7px 10px;font:18px VT323,monospace;}</style></body>
 </html>

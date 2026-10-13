@@ -1,28 +1,48 @@
-# Jolie's Virtual Picnic — Neocities practice
+# digi picnic
 
-[Visit the live site](https://joliesarro.neocities.org/)
+[Visit digi picnic](https://joliesarro.neocities.org/)
 
-An interactive personal webpage built as HTML practice with substantial AI assistance. I took an HTML course in college and used this project to explore a more playful interface than a conventional page of links.
+A playful personal website: hang out with an animated character, put music on, and explore a virtual laptop and phone. Built with HTML, CSS, and JavaScript and hosted on Neocities.
 
-## What to explore
+## Explore
 
-The picnic scene uses clickable objects to open camera, laptop, and phone overlays. It includes avatar animation, dialogue, music controls, and layered CSS composition.
+- **Picnic character:** typed dialogue, character animation, per-letter voice sounds, and an inline conversation input.
+- **Laptop:** tarot, Snake, a random Magic 8 Ball, browser-local chat messages, and an Archive.org TV playlist.
+- **Video popout:** drag to move or resize, fullscreen, and remembered layout.
+- **Phone:** social links and LinkedIn.
+- **Music:** SoundCloud controls with a remembered, nonblocking aux choice.
 
-## Implementation
+## Run locally
 
-- HTML provides the scene objects, overlay frames, and media controls.
-- CSS uses absolute positioning, viewport-relative sizing, hover effects, transforms, and keyframe animation.
-- JavaScript coordinates overlays, media interaction, dialogue, and avatar image buffering.
-- A `prefers-reduced-motion` rule disables several decorative animations.
+The complete site is in `source/`, including the images, audio, styles, and dependent pages from the Neocities export. The homepage and active laptop include the latest edits.
 
-[Source snapshot](source/index.html) was fetched from the public homepage on October 12, 2026. It is an inspection snapshot, not a complete local mirror: dependent pages, styles, images, and third-party media are not included. Use the live site to see the complete experience.
+```sh
+python3 -m http.server 8000 --directory source
+```
 
-## My role and AI assistance
+Open http://localhost:8000. Serve this folder as the web root so absolute asset paths resolve. External embeds need internet access.
 
-I directed the scene concept, visual choices, and interaction ideas. AI helped substantially with the HTML, CSS, and JavaScript implementation. The project reflects practice and iteration; it is not presented as production-grade frontend engineering.
+## Check changes
 
-## Technical review and next improvements
+```sh
+python3 scripts/check_site.py
+```
 
-Source inspection confirms overlay event handlers, percentage/viewport sizing, media embeds, and reduced-motion rules. Browser interaction, accessibility, and mobile layout still need a full audit.
+The checker reports missing local assets and checks inline JavaScript syntax when Node.js is installed. Also inspect the picnic and laptop in a browser at desktop and mobile widths before publishing.
 
-The next improvements are keyboard-accessible scene controls, focus management for overlays, responsive composition on narrow screens, and a reduced-motion review of JavaScript-driven behavior. Third-party media availability and embed restrictions can affect the experience.
+## Hosting and behavior
+
+Upload the contents of `source/` to Neocities, preserving paths. This repository does not automatically deploy or contain hosting credentials.
+
+The site is static. Laptop chat messages and visitor preferences use localStorage in each visitor’s browser; messages are not a shared guestbook. Character chat combines guided responses with an optional SmolLM2 360M model through WebLLM. The model downloads only when needed and requires WebGPU; its conversational ability is limited. The TV playlist is a saved selection of Archive.org items; third-party availability can change.
+
+## Creative direction and AI assistance
+
+Jolie directed the picnic concept, character, palette, wording, and interactions. AI substantially assisted with implementation and iteration. This is an evolving personal project, with further accessibility and mobile work planned.
+
+## Next improvements
+
+- Keyboard access and focus management for scene objects and overlays.
+- Mobile composition and browser compatibility checks.
+- More reliable character conversations and an optional shared guestbook backend.
+- Review dependencies and attribution before reusing or redistributing assets.

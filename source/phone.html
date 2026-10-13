@@ -1,0 +1,128 @@
+<!-- /phone.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>virtual phone</title>
+  <link rel="icon" href="/assets/tab.png" type="image/png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <style>
+    :root { --pink:#ff99cc; --hot:#ff69b4; --shadow:#d46aa5; }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; font-family:"VT323", system-ui, sans-serif;
+      background:#fff; user-select:none;
+      cursor:url("/assets/cursor.gif"), auto;
+      height:100%; display:flex; flex-direction:column;
+    }
+
+    .phone-header {
+      background:linear-gradient(#ffd4ea,#ffc2e1);
+      height:42px;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 10px; font-family:"Press Start 2P"; font-size:12px;
+      border-bottom:3px solid var(--pink);
+    }
+    .phone-header button {
+      background:var(--pink); border:0; color:#fff; border-radius:6px;
+      padding:4px 10px; cursor:pointer; box-shadow:2px 2px 0 #d164a0;
+      font-family:"Press Start 2P"; font-size:10px;
+    }
+    .phone-header button:hover { background:var(--hot); }
+
+    .scroll-frame {
+      flex:1; overflow-y:auto; background:#fff;
+      -webkit-overflow-scrolling:touch;
+    }
+
+    section { border-bottom:3px solid var(--pink); padding:10px; }
+    section h2 {
+      font-family:"Press Start 2P"; font-size:12px;
+      margin:0 0 6px; color:var(--hot); text-align:center;
+    }
+
+    /* Sticker-style links */
+    .sticker {
+      display:inline-block; margin:10px auto; padding:10px 16px;
+      background:var(--pink); color:#fff; font-family:"Press Start 2P";
+      text-decoration:none; border-radius:12px;
+      box-shadow:3px 3px 0 #d164a0;
+      transition:transform 0.1s ease, background 0.2s ease;
+    }
+    .sticker:hover { background:var(--hot); transform:scale(1.05); }
+    .sticker-wrap { text-align:center; padding:20px; }
+  </style>
+</head>
+<body>
+  <div class="phone-header">
+    <div>✧ my phone ✧</div>
+    <button id="close-phone">✕</button>
+  </div>
+  
+  <div class="scroll-frame">
+
+    <!-- Pinterest -->
+    <section id="pin">
+      <h2>Pinterest</h2>
+      <div class="sticker-wrap">
+        <a href="https://pin.it/6OGUJFPHO"
+           target="_blank" class="sticker">
+          open my pinterest ✧
+        </a>
+      </div>
+    </section>
+
+    <!-- Tumblr -->
+    <section id="tum">
+      <h2>Tumblr</h2>
+      <div class="sticker-wrap">
+        <a href="https://blueberry-daydreams.tumblr.com/"
+           target="_blank" class="sticker">
+          open my tumblr ✧
+        </a>
+      </div>
+    </section>
+
+    <!-- LinkedIn -->
+    <section id="linkedin">
+      <h2>LinkedIn</h2>
+      <div class="sticker-wrap">
+        <a href="https://www.linkedin.com/in/joliesarro/"
+           target="_blank" class="sticker">
+          open my linkedin ✧
+        </a>
+      </div>
+    </section>
+  
+    <!-- Instagram -->
+    <section id="ig">
+      <h2>Instagram</h2>
+      <iframe 
+        src="https://www.instagram.com/itsjoliecannoli/embed"
+        title="Instagram feed"
+        loading="lazy"
+        style="width:100%; min-height:500px; border:0;">
+      </iframe>
+    </section>
+
+  </div>
+
+  <script async defer src="https://assets.pinterest.com/js/pinit.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      try { window.PinUtils && window.PinUtils.build(); } catch (_) {}
+    });
+
+    document.getElementById('close-phone').addEventListener('click', () => {
+      try {
+        if (window.parent && typeof window.parent.closePhone === 'function') {
+          window.parent.closePhone();
+        } else {
+          window.close();
+        }
+      } catch(_) { window.close(); }
+    });
+  </script>
+</body>
+</html>
