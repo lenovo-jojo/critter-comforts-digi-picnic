@@ -633,13 +633,18 @@ body{background-color:#a4d7ff;background-image:radial-gradient(circle at 1px 1px
     function fitWindow(w){
       const root=document.getElementById('desktop');
       const mobile=root.clientWidth<=600;
-      const minY=mobile?169:57;
+      const popout=w.id==='win-tv'&&w.classList.contains('video-popout');
+      if(popout&&document.fullscreenElement)return;
+      const inset=popout?24:16;
+      const minX=popout&&!mobile?150:inset;
+      const minY=mobile?(popout?185:169):(popout?69:57);
       if(!w.dataset.preferredWidth) w.dataset.preferredWidth=String(parseFloat(w.style.width)||540);
-      const width=Math.min(Number(w.dataset.preferredWidth),root.clientWidth-32);
+      const width=Math.min(Number(w.dataset.preferredWidth),root.clientWidth-minX-inset);
+      if(popout)w.style.height=Math.round(width*9/16)+'px';
       w.style.width=width+'px';
-      const maxX=Math.max(12,root.clientWidth-w.offsetWidth-16);
-      const maxY=Math.max(minY,root.clientHeight-w.offsetHeight-70);
-      w.style.left=Math.min(maxX,Math.max(16,parseFloat(w.style.left)||160))+'px';
+      const maxX=Math.max(minX,root.clientWidth-w.offsetWidth-inset);
+      const maxY=Math.max(minY,root.clientHeight-w.offsetHeight-(popout?81:70));
+      w.style.left=Math.min(maxX,Math.max(minX,parseFloat(w.style.left)||160))+'px';
       w.style.top=Math.min(maxY,Math.max(minY,parseFloat(w.style.top)||78))+'px';
     }
     function syncTasks(){document.querySelectorAll('.taskbar [data-app]').forEach(b=>b.setAttribute('aria-pressed',document.querySelector(b.dataset.app).style.display!=='none'));}
