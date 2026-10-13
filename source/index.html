@@ -551,6 +551,7 @@
 
       /* Laptop overlay */
       document.getElementById('laptop').addEventListener('click', () => { openLaptop(); });
+      if(!companionMode&&new URLSearchParams(location.search).get('laptop')==='1')openLaptop();
       document.getElementById('close-laptop').addEventListener('click', (e) => { e.stopPropagation(); closeLaptop(); });
       document.getElementById('laptop-overlay').addEventListener('click', (event) => {
         const frame = document.querySelector('.laptop-frame');

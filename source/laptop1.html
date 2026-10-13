@@ -213,12 +213,12 @@ html[data-os-theme]:not([data-os-theme="bow"]) #theme-cycle{background:transpare
 html[data-os-theme]:not([data-os-theme="bow"]) :focus-visible{outline-color:var(--theme-ink)}
 html[data-os-theme]:not([data-os-theme="bow"]) input::placeholder,html[data-os-theme]:not([data-os-theme="bow"]) textarea::placeholder{color:var(--theme-ink);opacity:.55}
 html[data-os-theme="bulb"] :is(.window,.xbtn,.icon span,.pill,.send,.chat-box,.inp){border-radius:0}html[data-os-theme="bulb"] .window{border-width:3px}html[data-os-theme="glasses"] :is(.topbar,.titlebar,.taskbar,.desktop-note){font-family:VT323,monospace}html[data-os-theme="glasses"] .system-name{font:18px VT323,monospace;letter-spacing:2px}
-@media(max-width:600px){#theme-cycle{gap:7px;font-size:21px}#theme-cycle svg{width:28px;height:28px}}</style><style>#os-companion{left:auto;right:0}.desktop-note{right:auto;left:40px}@media(max-width:600px){.desktop-note{left:24px;width:160px;padding:16px;font-size:17px}}</style></head>
+@media(max-width:600px){#theme-cycle{gap:7px;font-size:21px}#theme-cycle svg{width:28px;height:28px}}</style><style>#os-companion{left:auto;right:0}.desktop-note{right:auto;left:40px}@media(max-width:600px){.desktop-note{left:24px;width:160px;padding:16px;font-size:17px}}</style><style>.topbar{justify-content:flex-end}.system-name{position:absolute;left:50%;transform:translateX(-50%)}.os-window-controls{display:flex;align-items:center;gap:6px}.os-window-controls .xbtn{width:25px;height:25px;display:grid;place-items:center;padding:0}</style></head>
 <body>
   <!-- Top bar -->
   <div class="topbar">
-    <button class="btn" id="backBtn" type="button" aria-label="Back">← back to picnic</button>
-    <div class="system-name"><span aria-hidden="true">✧</span><span>JOLIE OS</span><span aria-hidden="true">✧</span></div><div class="os-status"><button id="weather" title="Show your local weather">☀︎ weather</button><div class="clock" id="clock">--:--</div><button class="xbtn" id="os-fullscreen" aria-label="Fullscreen laptop">+</button></div>
+
+    <div class="system-name"><span aria-hidden="true">✧</span><span>JOLIE OS</span><span aria-hidden="true">✧</span></div><div class="os-status"><button id="weather" title="Show your local weather">☀︎ weather</button><div class="clock" id="clock">--:--</div><div class="os-window-controls"><button class="xbtn" id="os-popup" aria-label="Use laptop as popup">−</button><button class="xbtn" id="os-fullscreen" aria-label="Fullscreen laptop">+</button><button class="xbtn" id="backBtn" aria-label="Back to picnic">×</button></div></div>
   </div>
 
   <!-- Desktop root -->
@@ -321,7 +321,6 @@ html[data-os-theme="bulb"] :is(.window,.xbtn,.icon span,.pill,.send,.chat-box,.i
           window.parent.closeLaptop(); done = true;
         }
       } catch(_) {}
-      if (!done && document.referrer) { history.back(); done = true; }
       if (!done) {
         try { window.top.location.href = '/'; } catch(_) { window.location.href = '/'; }
       }
@@ -758,8 +757,9 @@ if(savedDesktop){if(savedDesktop.channel!=null)tvSelect.value=savedDesktop.chann
 document.documentElement.dataset.desktopReady='yes';
 document.querySelectorAll('.window').forEach(w=>{if(w.id==='win-tv')return;const grip=document.createElement('button');grip.className='window-grip';grip.type='button';grip.setAttribute('aria-label','Resize '+w.id.replace('win-',''));w.append(grip);let start=null;grip.addEventListener('pointerdown',e=>{e.preventDefault();grip.setPointerCapture(e.pointerId);start={x:e.clientX,y:e.clientY,width:w.offsetWidth,height:w.offsetHeight};focusWin(w);});grip.addEventListener('pointermove',e=>{if(!start)return;const root=document.getElementById('desktop');const width=Math.max(220,Math.min(root.clientWidth-32,start.width+e.clientX-start.x));const height=Math.max(200,Math.min(root.clientHeight-130,start.height+e.clientY-start.y));w.dataset.preferredWidth=String(width);w.style.width=width+'px';w.style.height=height+'px';fitWindow(w);});grip.addEventListener('pointerup',()=>{start=null;saveDesktop();});grip.addEventListener('pointercancel',()=>{start=null;saveDesktop();});});
 document.addEventListener('pointerup',saveDesktop);document.addEventListener('click',saveDesktop);
+document.getElementById('os-popup').addEventListener('click',async()=>{if(document.fullscreenElement)await document.exitFullscreen();if(window.parent===window)location.href='/?laptop=1';});
 document.getElementById('os-fullscreen').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch(_){document.getElementById('os-fullscreen').title='Open laptop in its own tab for fullscreen';}});
-document.addEventListener('fullscreenchange',()=>{document.getElementById('os-fullscreen').textContent=document.fullscreenElement?'−':'+';});
+document.addEventListener('fullscreenchange',()=>{document.getElementById('os-fullscreen').setAttribute('aria-label',document.fullscreenElement?'Exit fullscreen laptop':'Fullscreen laptop');});
 function musicHost(){try{return window.parent!==window&&typeof window.parent.toggleMusic==='function'?window.parent:document.getElementById('os-companion').contentWindow;}catch(_){return null;}}
 document.getElementById('music-play').addEventListener('click',()=>{const host=musicHost();if(host)host.picnicMusicControl?host.picnicMusicControl('toggle'):host.toggleMusic();});document.getElementById('music-next').addEventListener('click',()=>{const host=musicHost();if(host)host.picnicMusicControl?host.picnicMusicControl('next'):host.playNext();});
 setInterval(()=>{try{const host=musicHost(),playing=host?.picnicPlayback?.()||false;document.getElementById('music-play').textContent=playing?'❚❚':'▶';document.getElementById('os-companion').contentWindow.picnicMusicState?.(playing);}catch(_){}},1000);
