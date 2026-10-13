@@ -384,6 +384,7 @@
     ];
     let returningVisitor=false;
     try{if(!companionMode){returningVisitor=localStorage.getItem('picnic_visited')==='yes';localStorage.setItem('picnic_visited','yes');}}catch(_){}
+    if(companionMode)lines.splice(0,lines.length,"hey :) what are you up to?",null);
     if(returningVisitor)lines[0]=Math.random()<.5?"hey! you're back!":"oh it's you again! hi. :)";
     let hasStarted = false, idx = -1, isTyping = false, typingInterval = null, currentFullText = "";
     let companionDismissTimer;
