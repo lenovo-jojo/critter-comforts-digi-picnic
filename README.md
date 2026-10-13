@@ -12,7 +12,7 @@ A playful personal website: hang out with an animated character, put music on, a
 - **Phone:** social links and LinkedIn.
 - **Music:** SoundCloud controls in the bottom bar, with a remembered, nonblocking aux choice.
 - **Themes:** click the bottom-left symbol to cycle bow (blue/pink), moon (black/white), light bulb (white/black), and glasses (black/green). The selected theme is remembered locally.
-- **Desktop companion:** the homepage character, animations, and inline chat at the bottom left.
+- **Desktop companion:** the homepage character, animations, and inline chat at the bottom right, opposite the post-it.
 - **Weather:** visitor-selected city weather illustration and temperature from Open-Meteo; the city is remembered locally.
 
 ## Run locally
@@ -37,7 +37,7 @@ The checker reports missing local assets and checks inline JavaScript syntax whe
 
 Upload the contents of `source/` to Neocities, preserving paths. This repository does not automatically deploy or contain hosting credentials.
 
-The site is static. Laptop chat messages and visitor preferences use localStorage in each visitor’s browser; messages are not a shared guestbook. Character chat combines guided responses with an optional Qwen3 4B model in a browser worker through WebLLM. The model downloads only when needed and requires WebGPU; the first model download is roughly 2 GB, so guided site replies remain available without it. The OS character waits for a click and dismisses unattended bubbles. Camera view uses the existing pixel backdrop with a responsive photo gallery. The TV playlist is a saved selection of Archive.org items; third-party availability can change.
+The site is static. Laptop chat messages and visitor preferences use localStorage in each visitor’s browser; messages are not a shared guestbook. Character conversation uses Qwen3 4B in a browser worker through WebLLM, with visitor-local time, actual music state, site context, and the last 12 conversation messages. Replies are validated at 60 words maximum and displayed in queued bubbles of at most 20 words; truncated or invalid replies receive one regeneration attempt. Clicking the character advances queued bubbles or requests a contextual continuation. Animalese sounds and the existing talking sprites remain browser-local. The model downloads on the first conversation request and requires WebGPU; the first download is roughly 2 GB. Conversation history stays in memory and resets on reload. The OS character waits for a click and dismisses unattended bubbles. Camera view uses the existing pixel backdrop with a responsive photo gallery. The TV playlist is a saved selection of Archive.org items; third-party availability can change.
 
 ## Creative direction and AI assistance
 
