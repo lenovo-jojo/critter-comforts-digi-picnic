@@ -11,6 +11,7 @@ A playful personal website: hang out with an animated character, put music on, a
 - **Desktop windows:** drag and resize every app; save open windows, dimensions, positions, and TV selection locally. The whole OS can open fullscreen.
 - **Phone:** social links and LinkedIn.
 - **Music:** SoundCloud controls in the bottom bar, with a remembered, nonblocking aux choice.
+- **Themes:** click the bottom-left symbol to cycle bow (blue/pink), moon (black/white), light bulb (white/black), and glasses (black/green). The selected theme is remembered locally.
 - **Desktop companion:** the homepage character, animations, and inline chat at the bottom left.
 - **Weather:** visitor-selected city weather illustration and temperature from Open-Meteo; the city is remembered locally.
 
