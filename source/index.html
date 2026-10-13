@@ -335,8 +335,9 @@
     let audioCtx = null, animaleseBuffer = null, triedAnimalese = false;
     async function ensureAudioReady(){
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') await audioCtx.resume();
-      if (!triedAnimalese && !animaleseBuffer){ triedAnimalese = true; await loadAnimaleseSample(); }
+      const resume = audioCtx.state === 'suspended' ? audioCtx.resume() : Promise.resolve();
+      if (!triedAnimalese && !animaleseBuffer){triedAnimalese=true;await Promise.all([loadAnimaleseSample(),resume]);}
+      else await resume;
     }
     async function loadAnimaleseSample(){
       const urls = ["/assets/animalese.wav", "/audio/animalese.wav"];
@@ -350,7 +351,7 @@
     function rateForChar(ch){ const idx = ch.toLowerCase().charCodeAt(0) - 97; if (idx < 0 || idx > 25) return 1.8; return 1.6 + (idx / 25) * 0.8; }
     function freqForChar(ch){ const idx = ch.toLowerCase().charCodeAt(0) - 97; const base = 440; if (idx < 0 || idx > 25) return 520; return base * Math.pow(2, (idx % 12) / 12); }
     function playPhonemeForChar(ch){
-      if (!audioCtx || /\s/.test(ch)) return;
+      if (!audioCtx || audioCtx.state!=='running' || /\s/.test(ch)) return;
       const now = audioCtx.currentTime, gain = audioCtx.createGain();
       gain.gain.setValueAtTime(0.0001, now);
       gain.gain.exponentialRampToValueAtTime(0.3, now + 0.01);
@@ -526,12 +527,13 @@
       if(companionMode)popup.style.display='none';else if(auxChoice==='yes')acceptAux();else if(auxChoice==='no')popup.style.display='none';else popup.style.display='flex';
       if(companionMode){hasStarted=false;idx=-1;speechEl.style.display='none';}
       else{
-        hasStarted=true;idx=0;currentFullText=lines[0];speechTextEl.textContent=currentFullText;speechEl.style.display='block';showTapIndicator(true);syncChatty();positionSpeechBubble();
-        let greetingSpoken=false;
-        async function greetWithVoice(){if(greetingSpoken||characterChatActive)return;await ensureAudioReady();if(greetingSpoken||characterChatActive||idx!==0)return;greetingSpoken=true;typeWriter(lines[0]);}
-        greetWithVoice().catch(()=>{});
-        window.addEventListener('pointerdown',()=>{greetWithVoice().catch(()=>{});},{once:true});
-        window.addEventListener('keydown',()=>{greetWithVoice().catch(()=>{});},{once:true});
+        hasStarted=true;idx=0;
+        // Typing begins immediately, even while the browser is unlocking audio.
+        ensureAudioReady().catch(()=>{});
+        typeWriter(lines[0]);
+        const unlockGreetingAudio=()=>{ensureAudioReady().catch(()=>{});};
+        window.addEventListener('pointerdown',unlockGreetingAudio,{once:true});
+        window.addEventListener('keydown',unlockGreetingAudio,{once:true});
       }
 
 
