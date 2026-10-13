@@ -64,7 +64,7 @@
     #sun-video-overlay{ position:absolute; inset:0; z-index:3; display:none; }
     #sun-video-overlay iframe{ width:200%; height:200%; transform:translate(-25%,-25%); border:0; }
 
-    .logo-circle{ position:absolute; top:8%; right:12%; width:10vw; max-width:170px; z-index:10001; }
+    .logo-circle{ position:absolute; top:8%; right:12%; width:10vw; max-width:170px; aspect-ratio:1; z-index:10001; }
     .logo-img{ width:100%; display:block; animation:rock 5s ease-in-out infinite; filter:saturate(120%) brightness(115%); z-index:10002; }
     .hoop-text{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:200%; height:200%; overflow:visible; animation:spin-text 20s linear infinite; z-index:10002; }
     @keyframes spin-text{ from{ transform:translate(-50%,-50%) rotate(0deg) } to{ transform:translate(-50%,-50%) rotate(360deg) } }
@@ -175,7 +175,7 @@
     </div>
 
     <div class="logo-circle">
-      <img src="/assets/heart-logo.png" alt="logo" class="logo-img"/>
+      <img src="/assets/heart-logo.png" alt="logo" class="logo-img" width="982" height="982" fetchpriority="high"/>
       <svg viewBox="0 0 500 500" class="hoop-text">
         <defs><path id="circlePath" d="M250,250 m-160,0 a160,160 0 1,1 320,0 a160,160 0 1,1 -320,0"/></defs>
         <text font-size="21" fill="#ff99cc" font-family="'Comic Sans MS', cursive" text-anchor="middle">
@@ -699,7 +699,7 @@ html:not(.companion-mode) .sunshine,html:not(.companion-mode) .logo-circle{width
 .main-container{perspective:none}html:not(.companion-mode) .main-container{overflow:clip}html,body{overflow:hidden}.speech{white-space:normal}#speech-text{white-space:pre-wrap}
 @media(max-width:600px){html:not(.companion-mode) .me-img{width:180px}html:not(.companion-mode) .laptop{width:96px}html:not(.companion-mode) .boombox{width:105px}}
 html:not(.companion-mode) .logo-circle{width:clamp(100px,12vw,170px);right:12%;top:10%}
-.logo-img{position:relative;top:-5%;transform:translateY(-5%)}
+.logo-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transform:translateY(-5%)}
 html:not(.companion-mode) .phone-img{transform:translate(-50%,-50%) perspective(400px) rotateY(-22deg) rotateZ(-9deg);filter:drop-shadow(5px 8px 3px #33425955)}
 html:not(.companion-mode) .phone-img:hover{transform:translate(-50%,-50%) perspective(400px) rotateY(-15deg) rotateZ(-7deg) scale(1.08)}
 html:not(.companion-mode) .cam-img{filter:drop-shadow(4px 7px 3px #33425955)}
