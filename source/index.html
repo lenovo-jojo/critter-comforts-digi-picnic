@@ -1,7 +1,7 @@
 <!-- /index.html (IG overlay scrollable) -->
 <!DOCTYPE html>
 <html lang="en">
-<head><script>const companionMode=new URLSearchParams(location.search).has("companion");if(companionMode){document.documentElement.classList.add("companion-mode");try{document.documentElement.dataset.osTheme=parent.document.documentElement.dataset.osTheme||"bow";}catch(_){}}</script>
+<head><script>window.picnicLLMEnabled=false;const companionMode=new URLSearchParams(location.search).has("companion");if(companionMode){document.documentElement.classList.add("companion-mode");try{document.documentElement.dataset.osTheme=parent.document.documentElement.dataset.osTheme||"bow";}catch(_){}}</script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>jolie’s digital picnic</title>
@@ -141,7 +141,7 @@
   .laptop-frame iframe{position:absolute;inset:0;display:block;}
 .close-laptop{position:absolute;right:10px;top:10px;z-index:10;border:1px solid #c59aaa;background:#fffaf2;color:#805668;border-radius:5px;width:25px;height:25px;cursor:pointer;}
 </style>
-<style>html,body,button,a,input,textarea,[role="button"],.icon,.me-img,.laptop,.cam-img,.phone-img,.boombox{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2732%27%20height%3D%2732%27%20viewBox%3D%270%200%2032%2032%27%3E%3Cpath%20d%3D%27M4%203H26V7H24V11H21V15H18V20H14V25H10V29H7V18H6V9H4Z%27%20fill%3D%27%23f4cf78%27%20stroke%3D%27%237b5264%27%20stroke-width%3D%271.5%27%2F%3E%3Cpath%20d%3D%27M4%203H26V7H4Z%27%20fill%3D%27%23d79964%27%2F%3E%3Cpath%20d%3D%27M10%2010H14V14H10ZM17%208H21V12H17ZM9%2019H13V23H9Z%27%20fill%3D%27%23cc7c87%27%2F%3E%3C%2Fsvg%3E") 4 3, auto;} .titlebar{cursor:move;} .window-grip,#tv-resize{cursor:nwse-resize;}#chatty-trigger{margin:10px auto 0;} .cam-frame{width:min(1100px,94vw);height:min(800px,90vh);border-radius:2px;} .cam-frame iframe{border-radius:0;}</style><style>.ig-frame{width:min(360px,calc(100vw - 24px));height:min(710px,calc(100dvh - 24px));background:transparent;border-radius:0;box-shadow:none;overflow:visible}.ig-frame iframe{height:100%!important}</style><style>.boombox img{display:block;width:100%;height:auto}.sleep-face{display:none;position:absolute;background:#8899cc;pointer-events:none}.eye-left{left:36%;top:41%;width:7%;height:10%}.eye-right{left:56%;top:41%;width:7%;height:10%}.mouth-cover{left:45%;top:47%;width:9%;height:8%}.boombox.sleeping .sleep-face{display:none}</style></head>
+<style>html,body,button,a,input,textarea,[role="button"],.icon,.me-img,.laptop,.cam-img,.phone-img,.boombox{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2732%27%20height%3D%2732%27%20viewBox%3D%270%200%2032%2032%27%3E%3Cpath%20d%3D%27M4%203H26V7H24V11H21V15H18V20H14V25H10V29H7V18H6V9H4Z%27%20fill%3D%27%23f4cf78%27%20stroke%3D%27%237b5264%27%20stroke-width%3D%271.5%27%2F%3E%3Cpath%20d%3D%27M4%203H26V7H4Z%27%20fill%3D%27%23d79964%27%2F%3E%3Cpath%20d%3D%27M10%2010H14V14H10ZM17%208H21V12H17ZM9%2019H13V23H9Z%27%20fill%3D%27%23cc7c87%27%2F%3E%3C%2Fsvg%3E") 4 3, auto;} .titlebar{cursor:move;} .window-grip,#tv-resize{cursor:nwse-resize;}#chatty-trigger{margin:10px auto 0;} .cam-frame{width:min(1100px,94vw);height:min(800px,90vh);border-radius:2px;} .cam-frame iframe{border-radius:0;}</style><style>.ig-frame{width:min(360px,calc(100vw - 24px));height:min(710px,calc(100dvh - 24px));background:transparent;border-radius:0;box-shadow:none;overflow:visible}.ig-frame iframe{height:100%!important}</style><style>.boombox img{display:block;width:100%;height:auto}.sleep-face{display:none;position:absolute;background:#8899cc;pointer-events:none}.eye-left{left:36%;top:41%;width:7%;height:10%}.eye-right{left:56%;top:41%;width:7%;height:10%}.mouth-cover{left:45%;top:47%;width:9%;height:8%}.boombox.sleeping .sleep-face{display:none}</style><style id="llm-chat-paused">#chatty-trigger,#character-composer{display:none!important}</style></head>
 <body>
   <div class="main-container">
     <div class="bg-image"></div>
@@ -407,8 +407,8 @@
     function rememberIntro(){introComplete=true;try{localStorage.setItem('picnic_intro_complete','yes');}catch(_){} }
 
     window.picnicCharacterReply=async text=>{await ensureAudioReady();typeWriter(text.toLowerCase());};
-    window.picnicCharacterChat=()=>{ensureAudioReady();characterChatActive=true;finishTypingNow();showTapIndicator(false);document.getElementById("chatty-trigger").style.display="none";};
-    function syncChatty(){if(currentFullText.includes('take a load off')&&!isTyping)rememberIntro();document.getElementById('chatty-trigger').style.display=introComplete&&!characterChatActive?'block':'none';}
+    window.picnicCharacterChat=()=>{if(!window.picnicLLMEnabled)return;ensureAudioReady();characterChatActive=true;finishTypingNow();showTapIndicator(false);document.getElementById("chatty-trigger").style.display="none";};
+    function syncChatty(){if(currentFullText.includes('take a load off')&&!isTyping)rememberIntro();document.getElementById('chatty-trigger').style.display=window.picnicLLMEnabled&&introComplete&&!characterChatActive?'block':'none';}
     function finishTypingNow(){ if (!isTyping) return; clearInterval(typingInterval); speechTextEl.textContent = currentFullText; isTyping = false; showTapIndicator(true); setMeMode('idle'); syncChatty(); }
     function typeWriter(text, speed = 28){
       isTyping = true; currentFullText = text; syncChatty(); speechTextEl.textContent = ""; speechEl.style.display = "block"; showTapIndicator(false); positionSpeechBubble();
@@ -423,7 +423,7 @@
     function showLine(){
       const text = lines[idx % lines.length];
       if (text == null){
-        if(introComplete&&!characterChatActive){currentFullText='';speechTextEl.textContent='';speechEl.style.display='block';isTyping=false;showTapIndicator(false);setMeMode('idle');syncChatty();positionSpeechBubble();return;}
+        if(window.picnicLLMEnabled&&introComplete&&!characterChatActive){currentFullText='';speechTextEl.textContent='';speechEl.style.display='block';isTyping=false;showTapIndicator(false);setMeMode('idle');syncChatty();positionSpeechBubble();return;}
         speechEl.style.display = 'none'; isTyping = false; showTapIndicator(false); setMeMode('idle');
         if (isPlaying){ startBobDanceCycle(); } else { scheduleIdle2Timer(); }
         return;
@@ -606,6 +606,7 @@ function addMessage(who,text){if(who==='AI'){clearTimeout(lineTimer);pendingLine
 window.addEventListener('picnic-line-done',()=>{if(pendingLines.length)lineTimer=setTimeout(nextLine,1800);});
 window.addEventListener('picnic-chat-closed',()=>{clearTimeout(lineTimer);pendingLines=[];conversationRevision++;});
 async function loadModel(){
+ if(!window.picnicLLMEnabled)return null;
  if(engine)return engine;if(modelLoadPromise)return modelLoadPromise;
  loading=true;retry.hidden=true;status.textContent='loading conversation model…';
  modelLoadPromise=(async()=>{try{
@@ -620,11 +621,12 @@ async function loadModel(){
  }catch(error){status.textContent=error.message;retry.hidden=false;return null;}finally{loading=false;modelLoadPromise=null;}})();
  return modelLoadPromise;
 }
-function loadAI(){history.push({role:'assistant',content:"what's up?"});input.disabled=false;send.disabled=false;input.placeholder='';status.textContent='Ready ♡';input.focus();addMessage('AI',"what's up?");loadModel();}
+function loadAI(){if(!window.picnicLLMEnabled)return;history.push({role:'assistant',content:"what's up?"});input.disabled=false;send.disabled=false;input.placeholder='';status.textContent='Ready ♡';input.focus();addMessage('AI',"what's up?");loadModel();}
 document.getElementById('chatty-trigger').addEventListener('click',e=>{e.stopPropagation();window.picnicCharacterChat();composer.hidden=false;window.dispatchEvent(new Event('resize'));loadAI();});
 retry.addEventListener('click',loadModel);
 composer.addEventListener('click',e=>e.stopPropagation());
 async function requestReply(text,continuation=false){
+ if(!window.picnicLLMEnabled)return;
  if(busy)return;
  busy=true;send.disabled=true;clearTimeout(lineTimer);pendingLines=[];
  const checkpoint=history.length,revision=conversationRevision;let releaseModel;

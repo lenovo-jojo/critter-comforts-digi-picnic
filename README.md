@@ -53,3 +53,5 @@ jolie directed the picnic concept, character, palette, wording, and interactions
 ### tv library
 
 the tv browser offers jolie’s selected main picks and a password-gated private collection containing only non-main titles. studio ghibli and peanuts each have a title dropdown. peanuts exposes the individual specials and documentary extras from its decade collection; alternate uploads and dubs appear in a version selector. the source playlist snapshot contains 53 uploads from 2026-10-13. `source/tv-library.json` retains original upload names and catalog selections, including direct file selections within collections. playback is saved per archive upload and file, and the last selected special restores on reopening. unidentified uploads stay labeled as unidentified. the refresh control reads the latest published website catalog; it does not automatically import later archive playlist changes. the `cctv` password is an interface gate, not private hosting.
+
+llm conversation is temporarily disabled as of october 14, 2026 to avoid large browser model downloads. scripted greetings, animation, and voice sounds remain active.
