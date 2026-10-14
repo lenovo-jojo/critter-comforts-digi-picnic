@@ -784,5 +784,9 @@ if(companionMode){
 })();
 </script>
 <style>.logo-circle:focus-visible{outline:2px solid #ff99cc;outline-offset:12px;border-radius:50%}</style>
-</body>
+<style>
+.speech{overflow:visible!important;max-height:none!important}#speech-text{overflow-wrap:anywhere}
+html.companion-mode.surface-companion .me-img{left:auto!important;right:12px!important;bottom:0!important;top:auto!important;width:110px!important}
+html.companion-mode.surface-companion .speech{width:min(270px,calc(100vw - 32px))!important;font-size:9px!important;left:50%!important;top:auto!important;bottom:125px!important;transform:translateX(-50%)!important}
+</style><script>if(companionMode&&new URLSearchParams(location.search).has('surface'))document.documentElement.classList.add('surface-companion');</script></body>
 </html>
