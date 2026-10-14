@@ -891,8 +891,8 @@ applyOSTheme(document.documentElement.dataset.osTheme||'bow');
 <script>
 (()=>{
  const root=document.getElementById('desktop'),key='digi_picnic_widgets_v1';let saved={};try{saved=JSON.parse(localStorage.getItem(key)||'{}')}catch(_){}
- const widgets=[];
- function persist(){try{localStorage.setItem(key,JSON.stringify(Object.fromEntries(widgets.map(w=>[w.id,w.layout]))))}catch(_){}}
+ const widgets=[];let cornerPlaced=false;
+ function persist(){for(const w of widgets){w.layout.rx=w.layout.x/root.clientWidth;w.layout.ry=w.layout.y/root.clientHeight;}try{localStorage.setItem(key,JSON.stringify(Object.fromEntries(widgets.map(w=>[w.id,w.layout]))))}catch(_){}}
  for(const [selector,id] of [['.desktop-note','note'],['#os-companion','character'],['#win-8ball','ball']]){
   const item=document.querySelector(selector),rect=item.getBoundingClientRect(),rr=root.getBoundingClientRect();
   const ball=id==='ball';let bw=id==='note'?240:ball?270:item.offsetWidth,bh=id==='note'?200:ball?270:item.offsetHeight;
@@ -913,6 +913,7 @@ applyOSTheme(document.documentElement.dataset.osTheme||'bow');
     for(const [n,v] of Object.entries({x:l.x+'px',y:l.y+'px',w:bw*l.scale+'px',h:bh*l.scale+'px',scale:l.scale}))outer.style.setProperty('--widget-'+n,v);return;
    }
    l.scale=Math.max(.45,Math.min(2,Number(l.scale)||1,(root.clientWidth-24)/bw,(root.clientHeight-100)/bh));l.x=Math.max(12,Math.min(root.clientWidth-bw*l.scale-12,Number(l.x)||12));l.y=Math.max(48,Math.min(root.clientHeight-bh*l.scale-64,Number(l.y)||48));for(const [n,v] of Object.entries({'x':l.x+'px','y':l.y+'px','w':bw*l.scale+'px','h':bh*l.scale+'px','scale':l.scale}))outer.style.setProperty('--widget-'+n,v);}
+  if(Number.isFinite(w.layout.rx)){w.layout.x=w.layout.rx*root.clientWidth;w.layout.y=w.layout.ry*root.clientHeight;}
   w.apply=apply;apply();
   for(const mode of ['size']){const handle=document.createElement('div');handle.className='widget-size';handle.setAttribute('role','separator');handle.tabIndex=0;handle.setAttribute('aria-label','Resize '+id);outer.append(handle);let start=null;
    handle.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();handle.setPointerCapture(e.pointerId);outer.style.zIndex=3000;start={px:e.clientX,py:e.clientY,...w.layout};});
@@ -934,16 +935,23 @@ applyOSTheme(document.documentElement.dataset.osTheme||'bow');
    surface.addEventListener('pointerup',dragEnd);surface.addEventListener('pointercancel',dragEnd);
    surface.addEventListener('click',e=>{if(moved){e.preventDefault();e.stopImmediatePropagation();moved=false;}},true);
   }
-  window.addEventListener('resize',apply);
+  window.addEventListener('resize',()=>{if(Number.isFinite(w.layout.rx)){w.layout.x=w.layout.rx*root.clientWidth;w.layout.y=w.layout.ry*root.clientHeight;}apply();});
  }
  // Keep the opening arrangement clear of chrome, icons, windows, and other props.
  function arrangeOpening(){
+  const margin=Math.max(18,root.clientWidth*.025),bottom=document.querySelector('.taskbar').offsetHeight+18;
+  const scale=Math.max(.45,Math.min(1,root.clientWidth/900,(root.clientHeight-145)/365));
+  const note=widgets.find(w=>w.id==='note'),character=widgets.find(w=>w.id==='character');
+  if(!cornerPlaced&&note&&!Number.isFinite(saved.note?.rx)){note.layout={x:root.clientWidth-margin-note.bw*scale,y:root.clientHeight-bottom-140*scale-18-note.bh*scale,scale};note.apply();}
+  if(!cornerPlaced&&character&&!Number.isFinite(saved.character?.rx)){character.layout={x:root.clientWidth-margin-290*scale,y:root.clientHeight-bottom-390*scale,scale};character.apply();}
+  cornerPlaced=true;
   const rr=root.getBoundingClientRect(),gap=18,pad=24;
   const occupied=Array.from(root.querySelectorAll('.icon,.window:not(#win-8ball)')).filter(e=>e.getClientRects().length&&getComputedStyle(e).display!=='none').map(e=>{const r=e.getBoundingClientRect();return {x:r.left-rr.left,y:r.top-rr.top,w:r.width,h:r.height};});
   const clear=(r)=>r.x>=pad&&r.y>=56&&r.x+r.w<=root.clientWidth-pad&&r.y+r.h<=root.clientHeight-80&&occupied.every(b=>r.x+r.w+gap<=b.x||b.x+b.w+gap<=r.x||r.y+r.h+gap<=b.y||b.y+b.h+gap<=r.y);
   // The character frame reserves room for her speech bubble as well as her sprite.
   for(const w of [...widgets].sort((a,b)=>({character:0,note:1,ball:2}[a.id]-{character:0,note:1,ball:2}[b.id]))){
-   if(w.id==='character'&&w.outer.dataset.chatOpen!=='true'){const l=w.layout;occupied.push({x:l.x+150*l.scale,y:l.y+250*l.scale,w:140*l.scale,h:140*l.scale});continue;}
+   if(w.id==='note')continue;
+   if(w.id==='character'){ const l=w.layout;occupied.push({x:l.x+150*l.scale,y:l.y+250*l.scale,w:140*l.scale,h:140*l.scale});continue;}
    let found=null;const initial=root.clientWidth<=600&&w.id==='character'?Math.min(.5,w.layout.scale):w.layout.scale;
    for(const scale of [...Array.from({length:Math.max(1,Math.ceil((initial-.45)/.08))},(_,i)=>initial-i*.08),.45]){
     if(found)break;
