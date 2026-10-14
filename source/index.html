@@ -174,7 +174,7 @@
       </div>
     </div>
 
-    <div class="logo-circle">
+    <div class="logo-circle" role="button" tabindex="0" aria-label="Fullscreen picnic" title="Fullscreen picnic">
       <img src="/assets/heart-logo.png" alt="logo" class="logo-img" width="982" height="982" fetchpriority="high"/>
       <svg viewBox="0 0 500 500" class="hoop-text">
         <defs><path id="circlePath" d="M250,250 m-160,0 a160,160 0 1,1 320,0 a160,160 0 1,1 -320,0"/></defs>
@@ -545,6 +545,7 @@
         if (e.target.closest('input,textarea,select,[contenteditable]')) return;
         if (e.code === 'Space') { e.preventDefault(); playNext(); }
         if (e.key === 'Escape') {
+          if(document.fullscreenElement||document.webkitFullscreenElement)return;
           closeCam();
           closeLaptop();
           closePhone();
@@ -765,5 +766,23 @@ if(companionMode){
  const boundsObserver=new ResizeObserver(reportCompanionBounds);[bubble,document.querySelector('.main-container'),...document.querySelectorAll('.me-img')].forEach(e=>boundsObserver.observe(e));window.addEventListener('resize',reportCompanionBounds);window.addEventListener('load',reportCompanionBounds);reportCompanionBounds();
 }
 </script>
+<script>
+(()=>{
+ if(companionMode)return;
+ const logo=document.querySelector('.logo-circle');
+ async function fullscreenPicnic(){
+  try{
+   if(document.fullscreenElement||document.webkitFullscreenElement){const exit=document.exitFullscreen||document.webkitExitFullscreen;await exit.call(document);}
+   else{const enter=document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen;if(enter)await enter.call(document.documentElement);}
+  }catch(error){console.warn('Picnic fullscreen unavailable',error);}
+ }
+ logo.addEventListener('click',fullscreenPicnic);
+ logo.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();fullscreenPicnic();}});
+ function sync(){const active=!!(document.fullscreenElement||document.webkitFullscreenElement);logo.setAttribute('aria-label',active?'Exit fullscreen picnic':'Fullscreen picnic');logo.title=active?'Exit fullscreen picnic':'Fullscreen picnic';}
+ document.addEventListener('fullscreenchange',sync);document.addEventListener('webkitfullscreenchange',sync);
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(document.fullscreenElement||document.webkitFullscreenElement)){e.stopImmediatePropagation();const exit=document.exitFullscreen||document.webkitExitFullscreen;exit.call(document);}},true);
+})();
+</script>
+<style>.logo-circle:focus-visible{outline:2px solid #ff99cc;outline-offset:12px;border-radius:50%}</style>
 </body>
 </html>
