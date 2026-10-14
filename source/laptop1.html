@@ -534,6 +534,7 @@ html[data-os-theme="bulb"] :is(.window,.xbtn,.icon span,.pill,.send,.chat-box,.i
       ["Judgement","wake-up call"],
       ["The World","wholeness, completion"],
     ];
+    const tarotImages={"0": "tarot-00-TheFool.png", "1": "tarot-01-TheMagician.png", "2": "tarot-02-TheHighPriestess.png", "3": "tarot-03-TheEmpress.png", "4": "tarot-04-TheEmperor.png", "5": "tarot-05-TheHierophant.png", "6": "tarot-06-TheLovers.png", "7": "tarot-07-TheChariot.png", "8": "tarot-08-Strength.png", "9": "tarot-09-TheHermit.png", "10": "tarot-10-WheelOfFortune.png", "11": "tarot-11-Justice.png", "12": "tarot-12-TheHangedMan.png", "13": "tarot-13-Death.png", "14": "tarot-14-Temperance.png", "15": "tarot-15-TheDevil.png", "16": "tarot-16-TheTower.png", "17": "tarot-17-TheStar.png", "18": "tarot-18-TheMoon.png", "19": "tarot-19-TheSun.png", "20": "tarot-20-Judgement.png", "21": "tarot-21-TheWorld.png"};
     const grid = document.getElementById('tarot-grid');
     function draw(n=3){
       const pool = [...DECK]; const picks = [];
@@ -541,16 +542,10 @@ html[data-os-theme="bulb"] :is(.window,.xbtn,.icon span,.pill,.send,.chat-box,.i
         const idx = Math.floor(Math.random()*pool.length);
         const [name,desc] = pool.splice(idx,1)[0];
         const rev = Math.random()<0.5;
-        picks.push({name, desc, rev});
+        picks.push({name, desc, rev, image:tarotImages[DECK.findIndex(c=>c[0]===name)]});
       }
-      grid.innerHTML = picks.map(p => `
-        <div class="card" data-closable style="border:2px solid var(--pink); border-radius:12px; padding:8px; margin-top:10px; background:#fff; box-shadow:2px 2px 0 var(--shadow); transform:${p.rev?'rotate(180deg)':''}">
-          <div class="row" style="justify-content:center; align-items:center; transform:${p.rev?'rotate(180deg)':''}">
-            <div class="name">${p.name}${p.rev?' (rev)':''}</div>
-            ${SHOW_CARD_CLOSE ? '<button class="xbtn" data-close type="button" aria-label="close card">✕</button>' : ''}
-          </div>
-          <div class="desc" style="transform:${p.rev?'rotate(180deg)':''}">${p.desc}</div>
-        </div>`).join('');
+      grid.innerHTML = picks.map(p => `<button type="button" class="card tarot-flip" aria-label="${p.name}${p.rev?' reversed':''}: flip for description" aria-pressed="false"><span class="card-flipper"><span class="card-front"><img src="/assets/${p.image}" alt="${p.name}${p.rev?' reversed':''}" ${p.rev?'class="reversed"':''}></span><span class="card-back"><span class="name">${p.name}${p.rev?' (rev)':''}</span><span class="desc">${p.desc}</span><span class="flip-hint">tap to turn back</span></span></span></button>`).join('');
+      grid.querySelectorAll('.tarot-flip').forEach(card=>card.addEventListener('click',()=>{const flipped=card.classList.toggle('flipped');card.setAttribute('aria-pressed',String(flipped));}));
     }
     document.getElementById('draw-3').addEventListener('click', () => draw(3));
     document.getElementById('reshuffle').addEventListener('click', () => { grid.innerHTML=''; });
@@ -973,5 +968,7 @@ applyOSTheme(document.documentElement.dataset.osTheme||'bow');
 </script>
 <style>.icon span{display:none!important}.icon img{margin:0!important}.icon{justify-content:center!important}
 #win-chat .content{overflow:hidden;min-height:0;padding:10px}#win-chat .chat-wrap{display:flex;flex-direction:column;height:100%;min-height:0;gap:6px}#win-chat .chat-wrap>div[style="height:8px"]{display:none}#win-chat .chat-title{font-size:15px;flex:none;margin:0}#win-chat .chat-title button{padding:0 7px}#win-chat .chat-box{height:auto!important;min-height:40px;flex:1;overflow:hidden!important;padding:8px;font-size:16px}#win-chat .msg{margin:0;padding:0}#win-chat .meta{font-size:12px}#win-chat #chat-name{flex:none;padding:5px;font-size:16px}#win-chat .row{flex:none;min-width:0}#win-chat #chat-msg{height:50px!important;min-width:0;flex:1;resize:none;padding:5px;font-size:16px}#win-chat .send{padding:6px;font-size:18px}#win-chat .chat-wrap>.row:first-child{margin:0!important}#chat-send,#chat-name,#chat-msg{pointer-events:auto;user-select:text}
-</style><style>.icons{z-index:1!important}#chat-page{display:none!important}#win-chat .chat-title{display:flex;align-items:center;gap:8px;font:18px VT323,monospace!important}#win-chat .chat-title button{background:transparent;color:inherit;border:1px solid currentColor;border-radius:4px;font:bold 20px Arial;line-height:1;width:28px;height:28px;padding:0}</style><style>.tarot-grid .card{min-width:0}.tarot-grid .card .row{justify-content:center!important;width:100%;min-width:0}.tarot-grid .card .name,.tarot-grid .card .desc{width:100%;min-width:0;text-align:center;overflow-wrap:break-word}</style></body>
+</style><style>.icons{z-index:1!important}#chat-page{display:none!important}#win-chat .chat-title{display:flex;align-items:center;gap:8px;font:18px VT323,monospace!important}#win-chat .chat-title button{background:transparent;color:inherit;border:1px solid currentColor;border-radius:4px;font:bold 20px Arial;line-height:1;width:28px;height:28px;padding:0}</style><style>.tarot-grid .card{min-width:0}.tarot-grid .card .row{justify-content:center!important;width:100%;min-width:0}.tarot-grid .card .name,.tarot-grid .card .desc{width:100%;min-width:0;text-align:center;overflow-wrap:break-word}</style><style>
+.tarot-grid{align-items:start}.tarot-grid .tarot-flip{display:block;position:relative;aspect-ratio:2/3;min-height:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;perspective:900px;text-align:center;cursor:pointer;width:100%;font-family:VT323,monospace}.tarot-flip:before{display:none!important}.card-flipper{display:block;position:absolute;inset:0;transform-style:preserve-3d;transition:transform .45s}.tarot-flip.flipped .card-flipper{transform:rotateY(180deg)}.card-front,.card-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:7px;overflow:hidden}.card-front img{display:block;width:100%;height:100%;object-fit:contain}.card-front img.reversed{transform:rotate(180deg)}.card-back{transform:rotateY(180deg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:12px;background:var(--win);color:var(--ink);border:2px solid var(--pink)}.card-back .name{font-size:20px!important}.card-back .desc{font-size:18px!important;margin:0!important}.flip-hint{font-size:13px;opacity:.65}.tarot-flip:focus-visible{outline:2px solid var(--hot);outline-offset:5px}@media(prefers-reduced-motion:reduce){.card-flipper{transition:none}}
+</style></body>
 </html>
