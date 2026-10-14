@@ -288,14 +288,10 @@ html[data-os-theme="bulb"] :is(.window,.xbtn,.icon span,.pill,.send,.chat-box,.i
       <div class="titlebar">
         <div class="title"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cg%20stroke%3D%22%23805668%22%20stroke-width%3D%222.5%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Crect%20x%3D%2210%22%20y%3D%227%22%20width%3D%2233%22%20height%3D%2243%22%20rx%3D%224%22%20fill%3D%22%23dcd1ef%22%20transform%3D%22rotate(-9%2027%2028)%22%2F%3E%3Crect%20x%3D%2219%22%20y%3D%2211%22%20width%3D%2231%22%20height%3D%2243%22%20rx%3D%224%22%20fill%3D%22%23fff8ee%22%2F%3E%3Cpath%20d%3D%22m34%2020%203%208%208%203-8%203-3%208-3-8-8-3%208-3Z%22%20fill%3D%22%23e6a4bd%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E" alt=""><span>tarot</span></div>
         <div class="controls" data-nodrag>
-          <button class="xbtn" data-close type="button" aria-label="Close tarot window">✕</button>
+          <button class="xbtn" id="tarot-refresh" type="button" aria-label="Draw new tarot cards" title="Draw new cards"><svg viewBox="0 0 24 24" aria-hidden="true" style="width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M20 7v5h-5M20 12a8 8 0 1 0-2 5"/></svg></button><button class="xbtn" data-close type="button" aria-label="Close tarot window">✕</button>
         </div>
       </div>
       <div class="content">
-        <div class="row">
-          <button class="pill" id="draw-3" type="button">draw 3</button>
-          <button class="pill" id="reshuffle" type="button">reshuffle</button>
-        </div>
         <div class="tarot-grid" id="tarot-grid"></div>
       </div>
     </div>
@@ -547,8 +543,7 @@ html[data-os-theme="bulb"] :is(.window,.xbtn,.icon span,.pill,.send,.chat-box,.i
       grid.innerHTML = picks.map(p => `<button type="button" class="card tarot-flip" aria-label="${p.name}${p.rev?' reversed':''}: flip for description" aria-pressed="false"><span class="card-flipper"><span class="card-front"><img src="/assets/${p.image}" alt="${p.name}${p.rev?' reversed':''}" ${p.rev?'class="reversed"':''}></span><span class="card-back"><span class="name">${p.name}${p.rev?' (rev)':''}</span><span class="desc">${p.desc}</span><span class="flip-hint">tap to turn back</span></span></span></button>`).join('');
       grid.querySelectorAll('.tarot-flip').forEach(card=>card.addEventListener('click',()=>{const flipped=card.classList.toggle('flipped');card.setAttribute('aria-pressed',String(flipped));}));
     }
-    document.getElementById('draw-3').addEventListener('click', () => draw(3));
-    document.getElementById('reshuffle').addEventListener('click', () => { grid.innerHTML=''; });
+    document.getElementById('tarot-refresh').addEventListener('click', () => draw(3));
     draw(3);
 
     /* ---- Game: Snake (mini) ---- */
