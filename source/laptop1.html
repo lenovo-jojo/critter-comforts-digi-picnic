@@ -890,7 +890,7 @@ applyOSTheme(document.documentElement.dataset.osTheme||'bow');
 </style>
 <script>
 (()=>{
- const root=document.getElementById('desktop'),key='digi_picnic_widgets_v1';let saved={};try{saved=JSON.parse(localStorage.getItem(key)||'{}')}catch(_){}
+ const root=document.getElementById('desktop'),key='digi_picnic_widgets_v2';let saved={};try{saved=JSON.parse(localStorage.getItem(key)||'{}')}catch(_){}
  const widgets=[];let cornerPlaced=false;
  function persist(){for(const w of widgets){w.layout.rx=w.layout.x/root.clientWidth;w.layout.ry=w.layout.y/root.clientHeight;}try{localStorage.setItem(key,JSON.stringify(Object.fromEntries(widgets.map(w=>[w.id,w.layout]))))}catch(_){}}
  for(const [selector,id] of [['.desktop-note','note'],['#os-companion','character'],['#win-8ball','ball']]){
@@ -940,10 +940,10 @@ applyOSTheme(document.documentElement.dataset.osTheme||'bow');
  // Keep the opening arrangement clear of chrome, icons, windows, and other props.
  function arrangeOpening(){
   const margin=Math.max(18,root.clientWidth*.025),bottom=document.querySelector('.taskbar').offsetHeight+18;
-  const scale=Math.max(.45,Math.min(1,root.clientWidth/900,(root.clientHeight-145)/365));
+  const scale=Math.max(.45,Math.min(1,root.clientWidth/600,(root.clientHeight-145)/220));
   const note=widgets.find(w=>w.id==='note'),character=widgets.find(w=>w.id==='character');
-  if(!cornerPlaced&&note&&!Number.isFinite(saved.note?.rx)){note.layout={x:root.clientWidth-margin-note.bw*scale,y:root.clientHeight-bottom-140*scale-18-note.bh*scale,scale};note.apply();}
-  if(!cornerPlaced&&character&&!Number.isFinite(saved.character?.rx)){character.layout={x:root.clientWidth-margin-290*scale,y:root.clientHeight-bottom-390*scale,scale};character.apply();}
+  if(!cornerPlaced&&note&&!Number.isFinite(saved.note?.rx)){note.layout={x:root.clientWidth-margin-note.bw*scale,y:root.clientHeight-bottom-note.bh*scale,scale};note.apply();}
+  if(!cornerPlaced&&character&&!Number.isFinite(saved.character?.rx)){character.layout={x:root.clientWidth-margin-240*scale-24-290*scale,y:root.clientHeight-bottom-390*scale,scale};character.apply();}
   cornerPlaced=true;
   const rr=root.getBoundingClientRect(),gap=18,pad=24;
   const occupied=Array.from(root.querySelectorAll('.icon,.window:not(#win-8ball)')).filter(e=>e.getClientRects().length&&getComputedStyle(e).display!=='none').map(e=>{const r=e.getBoundingClientRect();return {x:r.left-rr.left,y:r.top-rr.top,w:r.width,h:r.height};});
