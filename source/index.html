@@ -539,7 +539,8 @@
       if(companionMode)popup.style.display='none';else if(auxChoice==='yes')acceptAux();else if(auxChoice==='no')popup.style.display='none';else popup.style.display='flex';
       // A character click unlocks audio and starts the greeting together.
       hasStarted=false;idx=-1;speechEl.style.display='none';
-      if(companionMode&&new URLSearchParams(location.search).get('surface')==='phone'){connectDialogueMirror();if(!dialogueMirrorHost){lines.splice(0,lines.length,'my socials are up there if you wanna snoop :)','are you good at flappy birds?','my best is 6, can you beat it?');hasStarted=true;idx=0;currentFullText=lines[0];speechTextEl.textContent=currentFullText;speechEl.style.display='block';isTyping=false;positionSpeechBubble();}}
+      if(companionMode&&new URLSearchParams(location.search).get('surface')==='phone')window.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===parent&&e.data?.type==='picnic-flappy-six'){showLine('oh you did it! nice!');keepCompanionBubble();}});
+      if(companionMode&&new URLSearchParams(location.search).get('surface')==='phone'){connectDialogueMirror();if(!dialogueMirrorHost){lines.splice(0,lines.length,'my socials are up there if you wanna snoop :)','are you good at flappy birds?','my best is 6 ... if you wanna try and beat it!');hasStarted=true;idx=0;currentFullText=lines[0];speechTextEl.textContent=currentFullText;speechEl.style.display='block';isTyping=false;positionSpeechBubble();}}
 
       /* Keyboard */
       document.addEventListener('keydown', (e) => {
