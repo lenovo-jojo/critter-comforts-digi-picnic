@@ -1,4 +1,4 @@
-# Jolie's Virtual Picnic — Neocities practice
+# Jolie's Digital Picnic — Neocities
 
 [Visit the live site](https://joliesarro.neocities.org/)
 
