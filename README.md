@@ -49,3 +49,7 @@ Jolie directed the picnic concept, character, palette, wording, and interactions
 - Mobile composition and browser compatibility checks.
 - More reliable character conversations and an optional shared guestbook backend.
 - Review dependencies and attribution before reusing or redistributing assets.
+
+### TV library
+
+The TV browser offers 10 main picks and a full alphabetized library. The 2026-10-13 Archive playlist snapshot contains 53 uploads grouped into 48 titles; alternate uploads and dubs appear in a version selector. Display titles are curated without changing Archive identifiers or per-upload playback storage. `source/tv-library.json` retains original upload names, version labels, and main-pick flags. Unidentified uploads stay labeled as unidentified. The refresh control reads the latest published website catalog; it does not automatically import later Archive playlist changes.
