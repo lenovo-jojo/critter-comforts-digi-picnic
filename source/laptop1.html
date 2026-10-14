@@ -686,7 +686,7 @@ html[data-os-theme="bulb"] :is(.window,.xbtn,.icon span,.pill,.send,.chat-box,.i
       const popout=w.id==='win-tv'&&w.classList.contains('video-popout');
       if(popout&&document.fullscreenElement)return;
       const inset=popout?24:16;
-      const minX=popout&&!mobile?150:inset;
+      const minX=(popout||w.id==='win-chat')&&!mobile?150:inset;
       const minY=mobile?(popout?185:169):(popout?69:57);
       if(!w.dataset.preferredWidth) w.dataset.preferredWidth=String(parseFloat(w.style.width)||540);
       const width=Math.min(Number(w.dataset.preferredWidth),root.clientWidth-minX-inset);w.style.setProperty('--width',width+'px');
@@ -962,5 +962,5 @@ applyOSTheme(document.documentElement.dataset.osTheme||'bow');
 </script>
 <style>.icon span{display:none!important}.icon img{margin:0!important}.icon{justify-content:center!important}
 #win-chat .content{overflow:hidden;min-height:0;padding:10px}#win-chat .chat-wrap{display:flex;flex-direction:column;height:100%;min-height:0;gap:6px}#win-chat .chat-wrap>div[style="height:8px"]{display:none}#win-chat .chat-title{font-size:15px;flex:none;margin:0}#win-chat .chat-title button{padding:0 7px}#win-chat .chat-box{height:auto!important;min-height:40px;flex:1;overflow:hidden!important;padding:8px;font-size:16px}#win-chat .msg{margin:0;padding:0}#win-chat .meta{font-size:12px}#win-chat #chat-name{flex:none;padding:5px;font-size:16px}#win-chat .row{flex:none;min-width:0}#win-chat #chat-msg{height:50px!important;min-width:0;flex:1;resize:none;padding:5px;font-size:16px}#win-chat .send{padding:6px;font-size:18px}#win-chat .chat-wrap>.row:first-child{margin:0!important}#chat-send,#chat-name,#chat-msg{pointer-events:auto;user-select:text}
-</style></body>
+</style><style>.icons{z-index:1!important}#chat-page{display:none!important}#win-chat .chat-title{display:flex;align-items:center;gap:8px;font:18px VT323,monospace!important}#win-chat .chat-title button{background:transparent;color:inherit;border:1px solid currentColor;border-radius:4px;font:bold 20px Arial;line-height:1;width:28px;height:28px;padding:0}</style></body>
 </html>
