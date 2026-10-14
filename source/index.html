@@ -411,9 +411,10 @@
     function syncChatty(){syncTourChoice();if(currentFullText.includes('take a load off')&&!isTyping)rememberIntro();document.getElementById('chatty-trigger').style.display=window.picnicLLMEnabled&&introComplete&&!characterChatActive?'block':'none';}
     const laptopTour=companionMode&&!new URLSearchParams(location.search).has('surface');let tourChosen=false;
     const tourChoices=document.createElement('div');tourChoices.id='laptop-tour-choices';tourChoices.hidden=true;
-    for(const [label,yes] of [['yes plz!',true],['nah i got it!',false]]){const button=document.createElement('button');button.type='button';button.textContent=label;button.addEventListener('click',e=>{e.stopPropagation();tourChosen=true;tourChoices.hidden=true;if(yes){idx=0;ensureAudioReady();playNext();}else{idx=lines.length-1;showLine('make yourself at home :)');}});tourChoices.append(button);}
+    for(const [label,yes] of [['yes plz!',true],['nah i got it!',false]]){const button=document.createElement('button');button.type='button';button.textContent=label;button.addEventListener('click',e=>{e.stopPropagation();tourChosen=true;tourChoices.hidden=true;if(yes){idx=0;startOrAdvanceDialogue();}else{idx=lines.length-1;typeWriter('make yourself at home :)');}});tourChoices.append(button);}
     speechEl.append(tourChoices);
-    function syncTourChoice(){tourChoices.hidden=!(laptopTour&&!tourChosen&&!isTyping&&currentFullText==='you want the laptop tour?');}
+    function syncTourChoice(){tourChoices.hidden=!(laptopTour&&!tourChosen&&speechTextEl.textContent==='you want the laptop tour?');}
+    new MutationObserver(syncTourChoice).observe(speechTextEl,{childList:true,characterData:true,subtree:true});
     function finishTypingNow(){ if (!isTyping) return; clearInterval(typingInterval); speechTextEl.textContent = currentFullText; isTyping = false; showTapIndicator(true); setMeMode('idle'); syncChatty(); }
     function typeWriter(text, speed = 28){
       isTyping = true; currentFullText = text; syncChatty(); speechTextEl.textContent = ""; speechEl.style.display = "block"; showTapIndicator(false); positionSpeechBubble();
@@ -443,6 +444,7 @@
       await ensureAudioReady();
       if (!hasStarted){ hasStarted = true; idx = 0; showLine(); return; }
       if (isTyping){ finishTypingNow(); return; }
+      if(laptopTour&&!tourChosen&&currentFullText==='you want the laptop tour?')return;
       idx = (idx + 1) % lines.length; showLine();
     }
 
@@ -486,7 +488,7 @@
     function randomIndex(){ if (unusedIndexes.length === 0) refillShuffle(); const r = Math.floor(Math.random() * unusedIndexes.length); return unusedIndexes.splice(r, 1)[0]; }
     function playSoundcloudRandom(){ if (!widgetReady) return; const idx = randomIndex(); if (typeof widget.skip === 'function') widget.skip(idx); else if (typeof widget.next === 'function') widget.next(); widget.play(); startBobDanceCycle(); }
     function playNext(){
-      if(laptopTour&&!tourChosen&&currentFullText==='you want the laptop tour?'&&!isTyping)return;
+      
       if (!widgetReady) return;
       playSoundcloudRandom();
       boombox.querySelector('img').src = '/assets/boombox.gif?' + Date.now();
@@ -545,7 +547,7 @@
       if(companionMode)popup.style.display='none';else if(auxChoice==='yes')acceptAux();else if(auxChoice==='no')popup.style.display='none';else popup.style.display='flex';
       // A character click unlocks audio and starts the greeting together.
       hasStarted=false;idx=-1;speechEl.style.display='none';
-      if(companionMode&&new URLSearchParams(location.search).get('surface')==='phone')window.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===parent&&e.data?.type==='picnic-flappy-six'){showLine('oh you did it! nice!');keepCompanionBubble();}});
+      if(companionMode&&new URLSearchParams(location.search).get('surface')==='phone')window.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===parent&&e.data?.type==='picnic-flappy-six'){typeWriter('oh you did it! nice!');keepCompanionBubble();}});
       if(companionMode&&new URLSearchParams(location.search).get('surface')==='phone'){connectDialogueMirror();if(!dialogueMirrorHost){lines.splice(0,lines.length,'my socials are up there if you wanna snoop :)','are you good at flappy birds?','my best is 6 ... if you wanna try and beat it!');hasStarted=true;idx=0;currentFullText=lines[0];speechTextEl.textContent=currentFullText;speechEl.style.display='block';isTyping=false;positionSpeechBubble();}}
 
       /* Keyboard */
