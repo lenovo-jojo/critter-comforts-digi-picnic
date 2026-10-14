@@ -389,7 +389,7 @@
     let companionDismissTimer;
     function keepCompanionBubble(){
       clearTimeout(companionDismissTimer);
-      if(companionMode&&!dialogueMirrorHost&&new URLSearchParams(location.search).get('surface')!=='phone')companionDismissTimer=setTimeout(()=>{if(isTyping){keepCompanionBubble();return;}speechEl.style.display='none';},12000);
+      if(companionMode&&!dialogueMirrorHost&&new URLSearchParams(location.search).get('surface')!=='phone'&&!(currentFullText==='you want the laptop tour?'&&!tourChosen))companionDismissTimer=setTimeout(()=>{if(isTyping){keepCompanionBubble();return;}speechEl.style.display='none';},12000);
     }
     ['pointerdown','keydown'].forEach(event=>document.addEventListener(event,keepCompanionBubble));
 
