@@ -383,7 +383,7 @@
     ];
     let returningVisitor=false;
     try{if(!companionMode){returningVisitor=localStorage.getItem('picnic_visited')==='yes';localStorage.setItem('picnic_visited','yes');}}catch(_){}
-    if(companionMode)lines.splice(0,lines.length,"hey :) what are you up to?",null);
+    if(companionMode)lines.splice(0,lines.length,"take a load off :)","critter comforts tv has lots of my favorite shows to stream","click the weather for a little retrocast","there's tarot if you're feeling spooky","or some classic html games if you wanna test your skills",null);
     if(returningVisitor)lines[0]=Math.random()<.5?"hey! you're back!":"oh it's you again! hi. :)";
     let hasStarted = false, idx = -1, isTyping = false, typingInterval = null, currentFullText = "";
     let companionDismissTimer;
@@ -539,7 +539,7 @@
       if(companionMode)popup.style.display='none';else if(auxChoice==='yes')acceptAux();else if(auxChoice==='no')popup.style.display='none';else popup.style.display='flex';
       // A character click unlocks audio and starts the greeting together.
       hasStarted=false;idx=-1;speechEl.style.display='none';
-      if(companionMode&&new URLSearchParams(location.search).get('surface')==='phone'){connectDialogueMirror();if(!dialogueMirrorHost){lines.splice(0,lines.length,'my socials are up there if you wanna snoop :)','are you good at flappy birds?','my best is 6 lol');hasStarted=true;idx=0;currentFullText=lines[0];speechTextEl.textContent=currentFullText;speechEl.style.display='block';isTyping=false;positionSpeechBubble();}}
+      if(companionMode&&new URLSearchParams(location.search).get('surface')==='phone'){connectDialogueMirror();if(!dialogueMirrorHost){lines.splice(0,lines.length,'my socials are up there if you wanna snoop :)','are you good at flappy birds?','my best is 6, can you beat it?');hasStarted=true;idx=0;currentFullText=lines[0];speechTextEl.textContent=currentFullText;speechEl.style.display='block';isTyping=false;positionSpeechBubble();}}
 
       /* Keyboard */
       document.addEventListener('keydown', (e) => {
