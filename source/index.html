@@ -141,7 +141,7 @@
   .laptop-frame iframe{position:absolute;inset:0;display:block;}
 .close-laptop{position:absolute;right:10px;top:10px;z-index:10;border:1px solid #c59aaa;background:#fffaf2;color:#805668;border-radius:5px;width:25px;height:25px;cursor:pointer;}
 </style>
-<style>html,body,button,a,input,textarea,[role="button"],.icon,.me-img,.laptop,.cam-img,.phone-img,.boombox{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2732%27%20height%3D%2732%27%20viewBox%3D%270%200%2032%2032%27%3E%3Cpath%20d%3D%27M4%203H26V7H24V11H21V15H18V20H14V25H10V29H7V18H6V9H4Z%27%20fill%3D%27%23f4cf78%27%20stroke%3D%27%237b5264%27%20stroke-width%3D%271.5%27%2F%3E%3Cpath%20d%3D%27M4%203H26V7H4Z%27%20fill%3D%27%23d79964%27%2F%3E%3Cpath%20d%3D%27M10%2010H14V14H10ZM17%208H21V12H17ZM9%2019H13V23H9Z%27%20fill%3D%27%23cc7c87%27%2F%3E%3C%2Fsvg%3E") 4 3, auto;} .titlebar{cursor:move;} .window-grip,#tv-resize{cursor:nwse-resize;}#chatty-trigger{margin:10px auto 0;} .cam-frame{width:min(1100px,94vw);height:min(800px,90vh);border-radius:2px;} .cam-frame iframe{border-radius:0;}</style><style>.ig-frame{width:min(360px,calc(100vw - 24px));height:min(710px,calc(100dvh - 24px));background:transparent;border-radius:0;box-shadow:none;overflow:visible}.ig-frame iframe{height:100%!important}</style><style>.boombox img{display:block;width:100%;height:auto}.sleep-face{display:none;position:absolute;background:#8899cc;pointer-events:none}.eye-left{left:36%;top:41%;width:7%;height:10%}.eye-right{left:56%;top:41%;width:7%;height:10%}.mouth-cover{left:45%;top:47%;width:9%;height:8%}.boombox.sleeping .sleep-face{display:none}</style><style id="llm-chat-paused">#chatty-trigger,#character-composer{display:none!important}</style></head>
+<style>html,body,button,a,input,textarea,[role="button"],.icon,.me-img,.laptop,.cam-img,.phone-img,.boombox{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2732%27%20height%3D%2732%27%20viewBox%3D%270%200%2032%2032%27%3E%3Cpath%20d%3D%27M4%203H26V7H24V11H21V15H18V20H14V25H10V29H7V18H6V9H4Z%27%20fill%3D%27%23f4cf78%27%20stroke%3D%27%237b5264%27%20stroke-width%3D%271.5%27%2F%3E%3Cpath%20d%3D%27M4%203H26V7H4Z%27%20fill%3D%27%23d79964%27%2F%3E%3Cpath%20d%3D%27M10%2010H14V14H10ZM17%208H21V12H17ZM9%2019H13V23H9Z%27%20fill%3D%27%23cc7c87%27%2F%3E%3C%2Fsvg%3E") 4 3, auto;} .titlebar{cursor:move;} .window-grip,#tv-resize{cursor:nwse-resize;}#chatty-trigger{margin:10px auto 0;} .cam-frame{width:min(1100px,94vw);height:min(800px,90vh);border-radius:2px;} .cam-frame iframe{border-radius:0;}</style><style>.ig-frame{width:min(360px,calc(100vw - 24px));height:min(710px,calc(100dvh - 24px));background:transparent;border-radius:0;box-shadow:none;overflow:visible}.ig-frame iframe{height:100%!important}</style><style>.boombox img{display:block;width:100%;height:auto}.sleep-face{display:none;position:absolute;background:#8899cc;pointer-events:none}.eye-left{left:36%;top:41%;width:7%;height:10%}.eye-right{left:56%;top:41%;width:7%;height:10%}.mouth-cover{left:45%;top:47%;width:9%;height:8%}.boombox.sleeping .sleep-face{display:none}</style><style id="llm-chat-paused">#chatty-trigger,#character-composer{display:none!important}</style><style>html.laptop-dialogue-active:not(.companion-mode) .main-container>#speech{opacity:0;pointer-events:none}</style></head>
 <body>
   <div class="main-container">
     <div class="bg-image"></div>
@@ -389,7 +389,7 @@
     let companionDismissTimer;
     function keepCompanionBubble(){
       clearTimeout(companionDismissTimer);
-      if(companionMode)companionDismissTimer=setTimeout(()=>{if(isTyping){keepCompanionBubble();return;}speechEl.style.display='none';},12000);
+      if(companionMode&&!dialogueMirrorHost)companionDismissTimer=setTimeout(()=>{if(isTyping){keepCompanionBubble();return;}speechEl.style.display='none';},12000);
     }
     ['pointerdown','keydown'].forEach(event=>document.addEventListener(event,keepCompanionBubble));
 
@@ -431,6 +431,7 @@
       typeWriter(text);
     }
     async function startOrAdvanceDialogue(){
+      if(dialogueMirrorHost){dialogueMirrorHost.picnicAdvanceDialogue();return;}
       if(speechEl.style.display==='none' && characterChatActive){keepCompanionBubble();speechEl.style.display='block';positionSpeechBubble();document.getElementById('ai-input').focus();return;}
       if(characterChatActive){if(isTyping)finishTypingNow();window.dispatchEvent(new Event('picnic-next-message'));return;}
       keepCompanionBubble();
@@ -440,7 +441,18 @@
       idx = (idx + 1) % lines.length; showLine();
     }
 
-    document.getElementById('close-speech').addEventListener('click',e=>{e.stopPropagation();if(isTyping)finishTypingNow();speechEl.style.display='none';setMeMode('idle');window.dispatchEvent(new Event('picnic-chat-closed'));});
+    document.getElementById('close-speech').addEventListener('click',e=>{e.stopPropagation();if(dialogueMirrorHost){dialogueMirrorHost.picnicCloseDialogue();return;}if(isTyping)finishTypingNow();speechEl.style.display='none';setMeMode('idle');window.dispatchEvent(new Event('picnic-chat-closed'));});
+    // The homepage owns typing and audio; the OS renders its current dialogue silently.
+    let dialogueMirrorHost=null;
+    window.picnicDialogueSnapshot=()=>({started:hasStarted,index:idx,text:speechTextEl.textContent,fullText:currentFullText,typing:isTyping,visible:speechEl.style.display==='block',mode:meMode});
+    window.picnicAdvanceDialogue=()=>startOrAdvanceDialogue();
+    window.picnicCloseDialogue=()=>{if(isTyping)finishTypingNow();speechEl.style.display='none';setMeMode('idle');window.dispatchEvent(new Event('picnic-chat-closed'));};
+    function connectDialogueMirror(){
+      if(!companionMode)return;let host;try{if(window.top!==window&&typeof window.top.picnicDialogueSnapshot==='function')host=window.top;}catch(_){}if(!host)return;
+      const sync=()=>{const state=host.picnicDialogueSnapshot();if(!state.started)return;dialogueMirrorHost=host;clearTimeout(companionDismissTimer);clearInterval(typingInterval);hasStarted=true;idx=state.index;currentFullText=state.fullText;isTyping=state.typing;speechTextEl.textContent=state.text;speechEl.style.display=state.visible?'block':'none';showTapIndicator(state.visible&&!state.typing);setMeMode(state.mode);syncChatty();if(state.visible)positionSpeechBubble();};
+      host.addEventListener('picnic-dialogue-update',sync);window.addEventListener('pagehide',()=>host.removeEventListener('picnic-dialogue-update',sync),{once:true});sync();
+    }
+    if(!companionMode)new MutationObserver(()=>window.dispatchEvent(new Event('picnic-dialogue-update'))).observe(speechEl,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:['style']});
     /* Sun overlay toggle */
     const sunOverlay = document.getElementById('sun-video-overlay');
     const sunIframe  = document.getElementById('sun-yt');
@@ -452,8 +464,8 @@
 
     /* helpers */
     function mountOverlay(id){const frame=document.querySelector('#'+id+' iframe');if(frame.dataset.src&&!frame.getAttribute('src')){const url=new URL(frame.dataset.src,location.href);url.searchParams.set('v',Date.now());frame.src=url.href;}}
-    function openLaptop(){mountOverlay('laptop-overlay');document.getElementById('laptop-overlay').style.display='flex';const frame=document.querySelector('#laptop-overlay iframe');try{frame.contentWindow.showLaptopVideo?.();}catch(_){} }
-    function closeLaptop(){ document.getElementById('laptop-overlay').style.display = 'none'; }
+    function openLaptop(){document.documentElement.classList.add('laptop-dialogue-active');mountOverlay('laptop-overlay');document.getElementById('laptop-overlay').style.display='flex';const frame=document.querySelector('#laptop-overlay iframe');try{frame.contentWindow.showLaptopVideo?.();}catch(_){} }
+    function closeLaptop(){document.documentElement.classList.remove('laptop-dialogue-active'); document.getElementById('laptop-overlay').style.display = 'none'; }
     function closeCam(){ document.getElementById('cam-overlay').style.display = 'none'; }
     function openPhone(){
       mountOverlay('phone-overlay');const o = document.getElementById('phone-overlay');
@@ -495,7 +507,7 @@
       meVideo = document.getElementById('me-bob-video');
       activeImg = meImgA; bufferImg = meImgB;
 
-      setMeMode('idle2');
+      setMeMode('idle2');connectDialogueMirror();
       boombox.classList.add('sleeping'); zzz.style.display = 'block';
 
       /* Music gate */
