@@ -233,7 +233,7 @@ html[data-os-theme="bulb"] :is(.window,.xbtn,.icon span,.pill,.send,.chat-box,.i
 
   <!-- Desktop root -->
   <div id="desktop" data-fit-root>
-    <aside class="desktop-note">feel free to play on my laptop! :)<br><span class="note-signoff">- jolie</span></aside><!-- Desktop icons -->
+    <aside class="desktop-note">feel free to play on my laptop! :)<span class="note-signoff">- jolie</span></aside><!-- Desktop icons -->
     <div class="icons">
       <button type="button" class="icon" data-open="#win-chat">
         <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cg%20stroke%3D%22%23805668%22%20stroke-width%3D%222.5%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M12%209H45Q50%209%2050%2014V36Q50%2041%2045%2041H29L17%2050V41H12Q7%2041%207%2036V14Q7%209%2012%209Z%22%20fill%3D%22%23fff8ee%22%2F%3E%3Cpath%20d%3D%22M16%2020h25M16%2027h19%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E" alt="" aria-hidden="true" draggable="false" onerror="this.onerror=null; this.style.display='none';">
@@ -879,6 +879,8 @@ applyOSTheme(document.documentElement.dataset.osTheme||'bow');
 #win-8ball.free-widget .titlebar{pointer-events:none}#win-8ball.free-widget .controls{pointer-events:auto}
 #widget-character[data-chat-open="true"]{z-index:4000!important}#widget-character,#widget-character>.widget-inner{pointer-events:none}#widget-character #os-companion,#widget-character>.widget-size{pointer-events:auto}
 #widget-character>.widget-size{right:auto;bottom:auto;left:calc(74.36% - 12px);top:calc(100% - 12px)}
+#widget-note .desktop-note,.desktop-note{width:240px!important;height:200px!important;min-height:0!important;padding:24px!important;font:18px/1.4 Arial,Helvetica,sans-serif!important;overflow-wrap:break-word;overflow:hidden;transform:rotate(-4deg)!important}
+#widget-note .note-signoff{font:inherit;margin-top:16px}
 </style>
 <script>
 (()=>{
@@ -892,7 +894,19 @@ applyOSTheme(document.documentElement.dataset.osTheme||'bow');
   if(!ball){outer.id='widget-'+id;item.before(outer);const inner=document.createElement('div');inner.className='widget-inner';inner.style.width=bw+'px';inner.style.height=bh+'px';outer.append(inner);inner.append(item);item.style.setProperty('width',bw+'px','important');item.style.setProperty('height',bh+'px','important');}
   outer.classList.add('free-widget');outer.dataset.freeWidget='yes';
   const w={id,outer,bw,bh,layout:saved[id]||{x:ball?(parseFloat(item.style.left)||180):rect.left-rr.left,y:ball?(parseFloat(item.style.top)||90):rect.top-rr.top,scale:1}};widgets.push(w);
-  function apply(){const l=w.layout;l.scale=Math.max(.45,Math.min(2,Number(l.scale)||1,(root.clientWidth-24)/bw,(root.clientHeight-100)/bh));l.x=Math.max(12,Math.min(root.clientWidth-bw*l.scale-12,Number(l.x)||12));l.y=Math.max(48,Math.min(root.clientHeight-bh*l.scale-64,Number(l.y)||48));for(const [n,v] of Object.entries({'x':l.x+'px','y':l.y+'px','w':bw*l.scale+'px','h':bh*l.scale+'px','scale':l.scale}))outer.style.setProperty('--widget-'+n,v);}
+  function apply(){const l=w.layout;
+   if(id==='note'){
+    const rootBox=root.getBoundingClientRect(),barBox=document.querySelector('.taskbar').getBoundingClientRect(),topBox=document.querySelector('.topbar').getBoundingClientRect();
+    const angle=4*Math.PI/180,visualW=bw*Math.cos(angle)+bh*Math.sin(angle),visualH=bh*Math.cos(angle)+bw*Math.sin(angle);
+    const top=Math.max(48,topBox.bottom-rootBox.top+18),bottom=barBox.top-rootBox.top-18;
+    const maxScale=Math.max(.1,Math.min(2,(root.clientWidth-48)/visualW,(bottom-top)/visualH));
+    l.scale=Math.max(Math.min(.35,maxScale),Math.min(maxScale,Number(l.scale)||1));
+    const gx=(visualW-bw)*l.scale/2,gy=(visualH-bh)*l.scale/2;
+    l.x=Math.max(24+gx,Math.min(root.clientWidth-24-gx-bw*l.scale,Number(l.x)||24));
+    l.y=Math.max(top+gy,Math.min(bottom-gy-bh*l.scale,Number(l.y)||top));
+    for(const [n,v] of Object.entries({x:l.x+'px',y:l.y+'px',w:bw*l.scale+'px',h:bh*l.scale+'px',scale:l.scale}))outer.style.setProperty('--widget-'+n,v);return;
+   }
+   l.scale=Math.max(.45,Math.min(2,Number(l.scale)||1,(root.clientWidth-24)/bw,(root.clientHeight-100)/bh));l.x=Math.max(12,Math.min(root.clientWidth-bw*l.scale-12,Number(l.x)||12));l.y=Math.max(48,Math.min(root.clientHeight-bh*l.scale-64,Number(l.y)||48));for(const [n,v] of Object.entries({'x':l.x+'px','y':l.y+'px','w':bw*l.scale+'px','h':bh*l.scale+'px','scale':l.scale}))outer.style.setProperty('--widget-'+n,v);}
   w.apply=apply;apply();
   for(const mode of ['size']){const handle=document.createElement('div');handle.className='widget-size';handle.setAttribute('role','separator');handle.tabIndex=0;handle.setAttribute('aria-label','Resize '+id);outer.append(handle);let start=null;
    handle.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();handle.setPointerCapture(e.pointerId);outer.style.zIndex=3000;start={px:e.clientX,py:e.clientY,...w.layout};});
