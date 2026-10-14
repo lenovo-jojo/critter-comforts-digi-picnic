@@ -468,7 +468,7 @@
     function closeLaptop(){document.documentElement.classList.remove('laptop-dialogue-active'); document.getElementById('laptop-overlay').style.display = 'none'; }
     function closeCam(){ document.getElementById('cam-overlay').style.display = 'none'; }
     function openPhone(){
-      mountOverlay('phone-overlay');const o = document.getElementById('phone-overlay');
+      mountOverlay('phone-overlay');try{document.querySelector('#phone-overlay iframe').contentWindow.picnicLockPhone?.();}catch(_){}const o = document.getElementById('phone-overlay');
       o.style.display = 'flex';
       if (window.instgrm && instgrm.Embeds && typeof instgrm.Embeds.process === 'function'){
         try { instgrm.Embeds.process(); } catch(_) {}
