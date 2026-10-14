@@ -689,7 +689,7 @@ html[data-os-theme="bulb"] :is(.window,.xbtn,.icon span,.pill,.send,.chat-box,.i
       const minX=(popout||w.id==='win-chat')&&!mobile?150:inset;
       const minY=mobile?(popout?185:169):(popout?69:57);
       if(!w.dataset.preferredWidth) w.dataset.preferredWidth=String(parseFloat(w.style.width)||540);
-      const preferred=Number(w.dataset.preferredWidth);const width=Math.min(Number.isFinite(preferred)&&preferred>=180?preferred:(popout?360:540),Math.max(180,root.clientWidth-minX-inset),popout?Math.max(180,(root.clientHeight-minY-81)*(Number(w.dataset.videoRatio)||16/9)):Infinity);w.style.setProperty('--width',width+'px');
+      const preferred=Number(w.dataset.preferredWidth);const width=Math.min(Number.isFinite(preferred)&&preferred>=180?preferred:(popout?360:540),Math.max(180,root.clientWidth-minX-inset),popout?Math.max(180,(root.clientHeight-minY-81-260*Math.min(1,root.clientWidth/1500))*(Number(w.dataset.videoRatio)||16/9)):Infinity);w.style.setProperty('--width',width+'px');
       if(popout)w.style.height=Math.round(width/(Number(w.dataset.videoRatio)||16/9))+'px';
       w.style.width=width+'px';
       const maxX=Math.max(minX,root.clientWidth-w.offsetWidth-inset);
@@ -784,8 +784,8 @@ function tvPlayerDocument(id,requestedFile='',selectionId=id){return "<!doctype 
     });
     const endResize=e=>{if(!resizeStart)return;resizeStart=null;try{resizeGrip.releasePointerCapture(e.pointerId);}catch(_){}saveDesktop();};
     resizeGrip.addEventListener('pointerup',endResize);resizeGrip.addEventListener('pointercancel',endResize);
-    const POP_LAYOUT_KEY='jolie_video_layout_v3';
-    const defaultPopLayout={x:150/735,y:108.32/791,w:549.15625/735};
+    const POP_LAYOUT_KEY='jolie_video_layout_v4';
+    const defaultPopLayout={x:.181,y:.075,w:.78};
     function restorePopLayout(){
       const root=document.getElementById('desktop');if(!root.clientWidth||!root.clientHeight)return;
       let layout=defaultPopLayout;try{layout=JSON.parse(localStorage.getItem(POP_LAYOUT_KEY))||defaultPopLayout;}catch(_){}
@@ -890,7 +890,7 @@ applyOSTheme(document.documentElement.dataset.osTheme||'bow');
 </style>
 <script>
 (()=>{
- const root=document.getElementById('desktop'),key='digi_picnic_widgets_v2';let saved={};try{saved=JSON.parse(localStorage.getItem(key)||'{}')}catch(_){}
+ const root=document.getElementById('desktop'),key='digi_picnic_widgets_v3';let saved={};try{saved=JSON.parse(localStorage.getItem(key)||'{}')}catch(_){}
  const widgets=[];let cornerPlaced=false;
  function persist(){for(const w of widgets){w.layout.rx=w.layout.x/root.clientWidth;w.layout.ry=w.layout.y/root.clientHeight;}try{localStorage.setItem(key,JSON.stringify(Object.fromEntries(widgets.map(w=>[w.id,w.layout]))))}catch(_){}}
  for(const [selector,id] of [['.desktop-note','note'],['#os-companion','character'],['#win-8ball','ball']]){
@@ -940,7 +940,7 @@ applyOSTheme(document.documentElement.dataset.osTheme||'bow');
  // Keep the opening arrangement clear of chrome, icons, windows, and other props.
  function arrangeOpening(){
   const margin=Math.max(18,root.clientWidth*.025),bottom=document.querySelector('.taskbar').offsetHeight+18;
-  const scale=Math.max(.45,Math.min(1,root.clientWidth/600,(root.clientHeight-145)/220));
+  const scale=Math.max(.45,Math.min(1,root.clientWidth/1500,(root.clientHeight-145)/400));
   const note=widgets.find(w=>w.id==='note'),character=widgets.find(w=>w.id==='character');
   if(!cornerPlaced&&note&&!Number.isFinite(saved.note?.rx)){note.layout={x:root.clientWidth-margin-note.bw*scale,y:root.clientHeight-bottom-note.bh*scale,scale};note.apply();}
   if(!cornerPlaced&&character&&!Number.isFinite(saved.character?.rx)){character.layout={x:root.clientWidth-margin-240*scale-24-290*scale,y:root.clientHeight-bottom-390*scale,scale};character.apply();}
