@@ -389,7 +389,7 @@
     let companionDismissTimer;
     function keepCompanionBubble(){
       clearTimeout(companionDismissTimer);
-      if(companionMode&&!dialogueMirrorHost)companionDismissTimer=setTimeout(()=>{if(isTyping){keepCompanionBubble();return;}speechEl.style.display='none';},12000);
+      if(companionMode&&!dialogueMirrorHost&&new URLSearchParams(location.search).get('surface')!=='phone')companionDismissTimer=setTimeout(()=>{if(isTyping){keepCompanionBubble();return;}speechEl.style.display='none';},12000);
     }
     ['pointerdown','keydown'].forEach(event=>document.addEventListener(event,keepCompanionBubble));
 
@@ -539,6 +539,7 @@
       if(companionMode)popup.style.display='none';else if(auxChoice==='yes')acceptAux();else if(auxChoice==='no')popup.style.display='none';else popup.style.display='flex';
       // A character click unlocks audio and starts the greeting together.
       hasStarted=false;idx=-1;speechEl.style.display='none';
+      if(companionMode&&new URLSearchParams(location.search).get('surface')==='phone'){connectDialogueMirror();if(!dialogueMirrorHost){currentFullText='my socials are up there if you wanna snoop :)';speechTextEl.textContent=currentFullText;speechEl.style.display='block';isTyping=false;positionSpeechBubble();}}
 
       /* Keyboard */
       document.addEventListener('keydown', (e) => {
