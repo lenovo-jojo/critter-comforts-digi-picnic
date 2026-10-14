@@ -532,12 +532,17 @@ html[data-os-theme="bulb"] :is(.window,.xbtn,.icon span,.pill,.send,.chat-box,.i
     ];
     const tarotImages={"0": "tarot-00-TheFool.png", "1": "tarot-01-TheMagician.png", "2": "tarot-02-TheHighPriestess.png", "3": "tarot-03-TheEmpress.png", "4": "tarot-04-TheEmperor.png", "5": "tarot-05-TheHierophant.png", "6": "tarot-06-TheLovers.png", "7": "tarot-07-TheChariot.png", "8": "tarot-08-Strength.png", "9": "tarot-09-TheHermit.png", "10": "tarot-10-WheelOfFortune.png", "11": "tarot-11-Justice.png", "12": "tarot-12-TheHangedMan.png", "13": "tarot-13-Death.png", "14": "tarot-14-Temperance.png", "15": "tarot-15-TheDevil.png", "16": "tarot-16-TheTower.png", "17": "tarot-17-TheStar.png", "18": "tarot-18-TheMoon.png", "19": "tarot-19-TheSun.png", "20": "tarot-20-Judgement.png", "21": "tarot-21-TheWorld.png"};
     const grid = document.getElementById('tarot-grid');
+    function tarotRandomIndex(limit){
+      const buffer=new Uint32Array(1),cutoff=Math.floor(4294967296/limit)*limit;
+      do{crypto.getRandomValues(buffer);}while(buffer[0]>=cutoff);
+      return buffer[0]%limit;
+    }
     function draw(n=3){
       const pool = [...DECK]; const picks = [];
       for (let i=0;i<n;i++){
-        const idx = Math.floor(Math.random()*pool.length);
+        const idx = tarotRandomIndex(pool.length);
         const [name,desc] = pool.splice(idx,1)[0];
-        const rev = Math.random()<0.5;
+        const rev = tarotRandomIndex(2)===1;
         picks.push({name, desc, rev, image:tarotImages[DECK.findIndex(c=>c[0]===name)]});
       }
       grid.innerHTML = picks.map(p => `<button type="button" class="card tarot-flip" aria-label="${p.name}${p.rev?' reversed':''}: flip for description" aria-pressed="false"><span class="card-flipper"><span class="card-front"><img src="/assets/${p.image}" alt="${p.name}${p.rev?' reversed':''}" ${p.rev?'class="reversed"':''}></span><span class="card-back"><span class="name">${p.name}${p.rev?' (rev)':''}</span><span class="desc">${p.desc}</span><span class="flip-hint">tap to turn back</span></span></span></button>`).join('');
