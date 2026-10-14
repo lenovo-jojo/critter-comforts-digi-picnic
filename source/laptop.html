@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jolie’s virtual picnic — chatroom</title>
+  <link rel="icon" href="/assets/me-bub1.png" type="image/png" />
+  <link href="/style.css" rel="stylesheet" type="text/css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: url('/assets/laptopbg.png') center center no-repeat fixed;
+      background-size: cover; /* fullscreen */
+      font-family: 'comic sans ms', cursive, sans-serif;
+      color: #ff99cc;
+      cursor: url('/assets/cursor.gif'), auto;
+
+      /* crunchy pixels */
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      -ms-interpolation-mode: nearest-neighbor;
+
+      height: 100vh;
+      position: relative;
+    }
+    .chat-container {
+      width: 75%;
+      max-width: 500px;
+      background: #add8e6; /* baby blue */
+      border: 3px solid #ff99cc;
+      border-radius: 0; /* pixel blocky */
+      padding: 1rem;
+      box-shadow: 6px 6px 0 #ff99cc;
+
+      position: absolute;
+      left: 50%;
+      bottom: 3rem; /* moves it further down */
+      transform: translateX(-50%);
+    }
+    .chat-container h2 {
+      margin: 0 0 1rem 0;
+      color: #ff69b4;
+      font-size: 1.5rem;
+    }
+    #chat-messages {
+      border: 2px solid #ff99cc;
+      border-radius: 0; /* blocky */
+      padding: 1rem;
+      height: 140px;
+      overflow-y: auto;
+      background: #f9f9f9;
+      color: #333;
+    }
+    #chat-form {
+      margin-top: 1rem;
+    }
+    #chat-form input[type="text"],
+    #chat-form textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      border: 2px solid #ff99cc;
+      border-radius: 0; /* blocky */
+      font-family: 'comic sans ms', cursive, sans-serif;
+      color: #333;
+    }
+    #chat-form button {
+      background: #ff99cc;
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 0; /* blocky */
+      cursor: pointer;
+      font-size: 1rem;
+      box-shadow: 3px 3px 0 #ff69b4;
+    }
+    #chat-form button:hover {
+      background: #ff69b4;
+    }
+    .back-button {
+      margin-bottom: 1rem;
+      display: inline-block;
+      background: #ff99cc;
+      color: #fff;
+      padding: 0.4rem 1rem;
+      text-decoration: none;
+      border-radius: 0; /* blocky */
+      font-size: 0.9rem;
+      box-shadow: 2px 2px 0 #ff69b4;
+    }
+    .back-button:hover {
+      background: #ff69b4;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <a href="/" class="back-button">← back to picnic</a>
+    <h2>welcome to the chatroom</h2>
+    <div id="chat-messages">
+      <!-- existing messages show here -->
+    </div>
+    <form id="chat-form">
+      <input type="text" id="chat-name" placeholder="your name" required />
+      <textarea id="chat-msg" placeholder="leave a message..." rows="3" required></textarea>
+      <button type="submit">send</button>
+    </form>
+  </div>
+
+  <script>
+    // simple chat logic; messages stored in-memory (reset on reload)
+    const form = document.getElementById('chat-form');
+    const messagesDiv = document.getElementById('chat-messages');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('chat-name').value.trim();
+      const msg = document.getElementById('chat-msg').value.trim();
+      if (!name || !msg) return;
+      const entry = document.createElement('div');
+      entry.innerHTML = `<strong>${name}:</strong> ${msg}`;
+      entry.style.marginBottom = '0.7rem';
+      messagesDiv.appendChild(entry);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      form.reset();
+    });
+  </script>
+</body>
+</html>
