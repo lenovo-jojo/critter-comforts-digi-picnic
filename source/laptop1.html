@@ -223,7 +223,7 @@ html[data-os-theme="bulb"] :is(.window,.xbtn,.icon span,.pill,.send,.chat-box,.i
 #win-tv.video-popout .tv-screen,#win-tv.video-popout .tv-content{min-height:0!important}#win-tv.video-popout .tv-screen{height:100%;flex:1}#win-tv.video-popout #tv-player{height:100%!important}
 @media(max-width:600px){.icons{inset:66px 16px auto;width:auto;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;grid-auto-rows:76px}.icon{width:100%;height:76px}.icon img{width:36px;height:36px}.icon span{font-size:14px;padding:4px}.desktop-note{left:18px!important;bottom:92px;width:142px;padding:14px;font-size:14px;transform:rotate(-3deg)}#os-companion{right:8px!important;width:calc(100% - 16px);height:340px;bottom:70px}.window{max-width:calc(100% - 32px);max-height:calc(100% - 230px)}.topbar{gap:10px}.os-status{min-width:0;gap:7px}.clock{font-size:14px}}
 @media(max-height:500px){.desktop-note{display:none!important}#os-companion{height:280px;width:340px}.icons{gap:4px;grid-auto-rows:54px}.icon{height:54px}.icon img{width:28px;height:28px;margin-bottom:3px}}
-</style><style>.tv-library-mode{display:flex;gap:8px}.tv-library-mode button{border:1px solid var(--pink);background:var(--chrome);color:inherit;padding:6px 10px;font:18px VT323}.tv-library-mode button[aria-pressed="true"]{background:var(--pink)}#tv-version-row{display:flex;flex-direction:column;gap:4px}#tv-version-row[hidden],#tv-title-row[hidden]{display:none!important}#tv-title-row{display:flex;flex-direction:column;gap:4px}#tv-version{font-size:17px}#win-tv.video-popout .tv-library-mode,#win-tv.video-popout #tv-version-row,#win-tv.video-popout #tv-title-row{display:none!important}</style><style>#tv-library-gate{width:min(280px,calc(100vw - 40px));border:2px solid var(--pink);border-radius:12px;background:var(--win);color:var(--ink);padding:20px;font:20px VT323}#tv-library-gate::backdrop{background:#49324b66}#tv-library-unlock{display:grid;gap:10px}#tv-library-password{width:100%;min-width:0;font:20px VT323;padding:8px;border:1px solid var(--pink);border-radius:6px}#tv-library-error{margin:0;color:#b13b71;min-height:20px}#tv-library-unlock>div{display:flex;justify-content:flex-end;gap:8px}#tv-library-unlock button{font:18px VT323;padding:5px 10px;border:1px solid var(--pink);background:var(--chrome);color:inherit;border-radius:5px}</style></head>
+</style><style>.tv-library-mode{display:flex;gap:8px}.tv-library-mode button{border:1px solid var(--pink);background:var(--chrome);color:inherit;padding:6px 10px;font:18px VT323}.tv-library-mode button[aria-pressed="true"]{background:var(--pink)}#tv-version-row{display:flex;flex-direction:column;gap:4px}#tv-version-row[hidden],#tv-title-row[hidden]{display:none!important}#tv-title-row{display:flex;flex-direction:column;gap:4px}#tv-version{font-size:17px}#win-tv.video-popout .tv-library-mode,#win-tv.video-popout #tv-version-row,#win-tv.video-popout #tv-title-row{display:none!important}</style><style>#tv-library-gate{width:min(280px,calc(100vw - 40px));border:2px solid var(--pink);border-radius:12px;background:var(--win);color:var(--ink);padding:20px;font:20px VT323}#tv-library-gate::backdrop{background:#49324b66}#tv-library-unlock{display:grid;gap:10px}#tv-library-password{width:100%;min-width:0;font:20px VT323;padding:8px;border:1px solid var(--pink);border-radius:6px}#tv-library-error{margin:0;color:#b13b71;min-height:20px}#tv-library-unlock>div{display:flex;justify-content:flex-end;gap:8px}#tv-library-unlock button{font:18px VT323;padding:5px 10px;border:1px solid var(--pink);background:var(--chrome);color:inherit;border-radius:5px}</style><style>#win-tv #tv-resize{position:absolute;right:0;bottom:0;width:22px;height:22px;z-index:12;padding:0;border:0;touch-action:none;background:linear-gradient(135deg,transparent 48%,#80566899 49%,#80566899 55%,transparent 56%,transparent 66%,#80566899 67%,#80566899 73%,transparent 74%)}#win-tv .tv-library-mode{flex-shrink:0}</style></head>
 <body>
   <!-- Top bar -->
   <div class="topbar">
@@ -767,15 +767,19 @@ function tvPlayerDocument(id,requestedFile='',selectionId=id){return "<!doctype 
     tvWindow.style.left=Math.max(16,document.getElementById('desktop').clientWidth-380)+'px';tvWindow.style.top='60px';
     const resizeGrip=document.getElementById('tv-resize');
     let resizeStart=null;
-    resizeGrip.addEventListener('pointerdown',e=>{e.preventDefault();resizeGrip.setPointerCapture(e.pointerId);resizeStart={x:e.clientX,y:e.clientY,width:tvWindow.offsetWidth};});
+    resizeGrip.addEventListener('pointerdown',e=>{e.preventDefault();resizeGrip.setPointerCapture(e.pointerId);resizeStart={x:e.clientX,y:e.clientY,width:tvWindow.offsetWidth,height:tvWindow.offsetHeight};});
     resizeGrip.addEventListener('pointermove',e=>{
       if(!resizeStart)return;
       const root=document.getElementById('desktop');
-      const maxWidth=Math.min(root.clientWidth-32,(root.clientHeight-parseFloat(tvWindow.style.top)-70)*16/9);
-      const width=Math.max(Math.min(200,maxWidth),Math.min(maxWidth,resizeStart.width+Math.max(e.clientX-resizeStart.x,(e.clientY-resizeStart.y)*16/9)));
-      tvWindow.dataset.preferredWidth=String(width);tvWindow.style.width=width+'px';tvWindow.style.height=(tvWindow.classList.contains('video-popout')?Math.round(width/(Number(tvWindow.dataset.videoRatio)||16/9)):Math.max(300,350+e.clientY-resizeStart.y))+'px';fitWindow(tvWindow);
+      const popout=tvWindow.classList.contains('video-popout'),ratio=Number(tvWindow.dataset.videoRatio)||16/9;
+      const maxHeight=Math.max(100,root.clientHeight-parseFloat(tvWindow.style.top)-70);
+      const maxWidth=popout?Math.min(root.clientWidth-32,maxHeight*ratio):root.clientWidth-32;
+      const dx=e.clientX-resizeStart.x,dy=e.clientY-resizeStart.y;
+      const width=Math.max(Math.min(popout?180:280,maxWidth),Math.min(maxWidth,resizeStart.width+(popout?(dx+dy*ratio)/2:dx)));
+      const height=popout?Math.round(width/ratio):Math.max(Math.min(280,maxHeight),Math.min(maxHeight,resizeStart.height+dy));
+      tvWindow.dataset.preferredWidth=String(width);tvWindow.style.width=width+'px';tvWindow.style.height=height+'px';fitWindow(tvWindow);
     });
-    const endResize=e=>{resizeStart=null;try{resizeGrip.releasePointerCapture(e.pointerId);}catch(_){}};
+    const endResize=e=>{if(!resizeStart)return;resizeStart=null;try{resizeGrip.releasePointerCapture(e.pointerId);}catch(_){}saveDesktop();};
     resizeGrip.addEventListener('pointerup',endResize);resizeGrip.addEventListener('pointercancel',endResize);
     const POP_LAYOUT_KEY='jolie_video_layout_v1';
     const defaultPopLayout={left:287.875,top:193.2578125,width:563.3125,height:317};
