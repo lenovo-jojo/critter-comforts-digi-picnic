@@ -368,7 +368,7 @@ html[data-os-theme="bulb"] :is(.window,.xbtn,.icon span,.pill,.send,.chat-box,.i
     function closeWin(el){ if(el.id==="win-tv"){try{document.getElementById("tv-player").contentDocument.querySelector("video")?.pause();}catch(_){}} el.style.display="none"; syncTasks();saveDesktop(); }
     function focusWin(el){
       document.querySelectorAll('.window').forEach(w => w.classList.remove('focus'));
-      el.classList.add('focus'); el.style.zIndex = ++zacc;
+      const highest=Math.max(zacc,...Array.from(document.querySelectorAll('.window,.free-widget')).map(w=>parseInt(getComputedStyle(w).zIndex)||0));zacc=highest+1;el.classList.add('focus');el.style.zIndex=zacc;
     }
     function saveDefaultIfMissing(w){
       const id = w.id;
@@ -762,7 +762,7 @@ function tvPlayerDocument(id,requestedFile='',selectionId=id){return "<!doctype 
       tvWindow.style.width=nextWidth+'px';
       tvWindow.style.height=(popout?Math.round(nextWidth/(Number(tvWindow.dataset.videoRatio)||16/9)):preserve?Math.round(nextWidth/(Number(tvWindow.dataset.videoRatio)||16/9))+180:550)+'px';
       const toggle=document.getElementById('tv-popout');toggle.textContent=popout?'↙':'↗';toggle.title=toggle.ariaLabel=popout?'Open TV':'Pop out video';
-      fitWindow(tvWindow);
+      fitWindow(tvWindow);focusWin(tvWindow);
     }
     document.getElementById('tv-popout').addEventListener('click',()=>setTVMode(!tvWindow.classList.contains('video-popout')));
     document.getElementById('tv-fullscreen').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await tvWindow.requestFullscreen();}catch(_){document.getElementById('tv-fullscreen').title='Use the video player fullscreen control';}});
