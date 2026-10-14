@@ -879,7 +879,7 @@ applyOSTheme(document.documentElement.dataset.osTheme||'bow');
 #win-8ball.free-widget .titlebar{pointer-events:none}#win-8ball.free-widget .controls{pointer-events:auto}
 #widget-character[data-chat-open="true"]{z-index:4000!important}#widget-character,#widget-character>.widget-inner{pointer-events:none}#widget-character #os-companion,#widget-character>.widget-size{pointer-events:auto}
 #widget-character>.widget-size{right:auto;bottom:auto;left:calc(74.36% - 12px);top:calc(100% - 12px)}
-#widget-note .desktop-note,.desktop-note{width:240px!important;height:200px!important;min-height:0!important;padding:24px!important;font:18px/1.4 Arial,Helvetica,sans-serif!important;overflow-wrap:break-word;overflow:hidden;transform:rotate(-4deg)!important}
+#widget-note .desktop-note,.desktop-note{display:block!important;width:240px!important;height:200px!important;min-height:0!important;padding:24px!important;font:18px/1.4 Arial,Helvetica,sans-serif!important;overflow-wrap:break-word;overflow:hidden;transform:rotate(-4deg)!important}
 #widget-note .note-signoff{font:inherit;margin-top:16px}
 </style>
 <script>
@@ -889,7 +889,7 @@ applyOSTheme(document.documentElement.dataset.osTheme||'bow');
  function persist(){try{localStorage.setItem(key,JSON.stringify(Object.fromEntries(widgets.map(w=>[w.id,w.layout]))))}catch(_){}}
  for(const [selector,id] of [['.desktop-note','note'],['#os-companion','character'],['#win-8ball','ball']]){
   const item=document.querySelector(selector),rect=item.getBoundingClientRect(),rr=root.getBoundingClientRect();
-  const ball=id==='ball';let bw=ball?270:item.offsetWidth,bh=ball?270:item.offsetHeight;
+  const ball=id==='ball';let bw=id==='note'?240:ball?270:item.offsetWidth,bh=id==='note'?200:ball?270:item.offsetHeight;
   const outer=ball?item:document.createElement('div');
   if(!ball){outer.id='widget-'+id;item.before(outer);const inner=document.createElement('div');inner.className='widget-inner';inner.style.width=bw+'px';inner.style.height=bh+'px';outer.append(inner);inner.append(item);item.style.setProperty('width',bw+'px','important');item.style.setProperty('height',bh+'px','important');}
   outer.classList.add('free-widget');outer.dataset.freeWidget='yes';
