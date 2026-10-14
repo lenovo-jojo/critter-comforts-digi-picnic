@@ -788,5 +788,5 @@ if(companionMode){
 .speech{overflow:visible!important;max-height:none!important}#speech-text{overflow-wrap:anywhere}
 html.companion-mode.surface-companion .me-img{left:auto!important;right:12px!important;bottom:0!important;top:auto!important;width:110px!important}
 html.companion-mode.surface-companion .speech{width:min(270px,calc(100vw - 32px))!important;font-size:9px!important;left:50%!important;top:auto!important;bottom:125px!important;transform:translateX(-50%)!important}
-</style><script>if(companionMode&&new URLSearchParams(location.search).has('surface'))document.documentElement.classList.add('surface-companion');</script></body>
+</style><script>if(companionMode&&new URLSearchParams(location.search).has('surface'))document.documentElement.classList.add('surface-companion', 'surface-'+new URLSearchParams(location.search).get('surface'));</script><style>html.companion-mode.surface-phone .me-img{left:50%!important;right:auto!important;transform:translateX(-50%)!important}</style></body>
 </html>
