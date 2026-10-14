@@ -207,7 +207,7 @@
   <!-- Phone overlay -->
   <div id="phone-overlay">
     <div class="ig-frame">
-      <iframe data-src="phone.html" title="Phone window"
+      <iframe data-src="/phone.html?v=20261013-clean-phone" title="Phone window"
               style="width:100%; height:100%; border:0;"></iframe>
     </div>
   </div>
@@ -451,7 +451,7 @@
     }
 
     /* helpers */
-    function mountOverlay(id){const frame=document.querySelector('#'+id+' iframe');if(frame.dataset.src&&!frame.getAttribute('src'))frame.src=frame.dataset.src;}
+    function mountOverlay(id){const frame=document.querySelector('#'+id+' iframe');if(frame.dataset.src&&!frame.getAttribute('src')){const url=new URL(frame.dataset.src,location.href);url.searchParams.set('v',Date.now());frame.src=url.href;}}
     function openLaptop(){mountOverlay('laptop-overlay');document.getElementById('laptop-overlay').style.display='flex';const frame=document.querySelector('#laptop-overlay iframe');try{frame.contentWindow.showLaptopVideo?.();}catch(_){} }
     function closeLaptop(){ document.getElementById('laptop-overlay').style.display = 'none'; }
     function closeCam(){ document.getElementById('cam-overlay').style.display = 'none'; }
@@ -582,14 +582,12 @@
 #character-composer[hidden]{display:none;}#ai-form{display:flex;gap:8px;}#ai-input{flex:1;min-width:0;background:black;color:white;border:1px solid white;padding:8px;font:18px VT323,monospace;}#character-composer button{background:black;color:white;border:1px solid white;font:16px VT323,monospace;cursor:pointer;}#character-composer button:disabled{opacity:.5;}#ai-status{margin:7px 0 0;font:14px VT323,monospace;overflow-wrap:anywhere;}#character-composer small{display:block;margin-bottom:7px;font-size:13px;}
 </style><script type="module">
 const composer=document.getElementById('character-composer'),status=document.getElementById('ai-status'),input=document.getElementById('ai-input'),send=document.getElementById('ai-send'),retry=document.getElementById('ai-retry');
-let engine,loading=false,busy=false;
+let engine,loading=false,busy=false,modelLoadPromise;
+let modelOwner=window;try{if(window.top.location.origin===location.origin)modelOwner=window.top;}catch(_){}
 const history=[];
 function buildMessages(continuation=false){
- return [{role:'system',content:`<identity>You are Jolie's virtual picnic character, a warm and curious companion. Take the visitor's wording, humor, energy, and seriousness as your strongest style cue. Remember what was actually discussed in this session.</identity>
-<site_context>The picnic has a boombox visitors can click for music, a phone for Jolie's socials and LinkedIn, a camera for her photo gallery, and a laptop with snake, tarot, TV, and a magic 8 ball. Visitors operate these controls themselves. Jolie's professional details are available through LinkedIn in the phone. Available biographical context here is limited to these verified links.</site_context>
-<current_context>Visitor-local time: ${new Date().toString()}. Current screen: ${companionMode?'inside the laptop desktop':'picnic homepage'}. Music is ${window.picnicPlayback?.()?'playing':'paused'}. Personal context comes from this conversation.</current_context>
-<conversation>Respond to the current message first. Center ordinary conversation on the visitor's real life. For example, "i am going to the airport" invites "ooh, where are you going?"; a destination invites interest in their plans there. Follow the visitor's topic and changes of mind. Be interested in their plans and experiences, and ask one specific follow-up when helpful. Questions are optional. Riff, brainstorm, or offer a tiny useful next step when it fits. Site guidance belongs in replies to explicit questions about this website, its controls, or things to do here. Describe capabilities and facts using the available context. ${continuation?'The visitor clicked you for another message. Continue naturally from an unresolved thread, or offer one fresh conversational opening.':''}</conversation>
-<presentation>Reply with dialogue only, in lowercase. Preserve exact requested quotations, code, and case-sensitive identifiers. Prefer one or two short sentences. A complete reply is at most 60 words; longer replies use short natural paragraphs. Match casual shorthand to the visitor's style.</presentation>`},...history.slice(-12)];
+ const prompt=`you are jolie’s warm, curious virtual picnic companion. follow the visitor’s topic and tone. reply in lowercase dialogue, one or two short sentences, at most 40 words. ask a specific follow-up when it fits: “i’m going to the airport” invites “where are you going?” facts: click the boombox for music, phone for jolie’s socials and linkedin, camera for photos, laptop for games and tv. visitors click these controls themselves. use linkedin for professional details. music is ${window.picnicPlayback?.()?'playing':'paused'}. ${continuation?'the visitor clicked you to continue the conversation.':''}`;
+ return [{role:'system',content:prompt},...history.slice(-8)];
 }
 function sequence(text){
  const cleaned=text.replace(/<think>[\s\S]*?<\/think>/g,'').trim();
@@ -607,39 +605,47 @@ function nextLine(){clearTimeout(lineTimer);const line=pendingLines.shift();if(l
 function addMessage(who,text){if(who==='AI'){clearTimeout(lineTimer);pendingLines=sequence(text);nextLine();}}
 window.addEventListener('picnic-line-done',()=>{if(pendingLines.length)lineTimer=setTimeout(nextLine,1800);});
 window.addEventListener('picnic-chat-closed',()=>{clearTimeout(lineTimer);pendingLines=[];conversationRevision++;});
-async function loadModel(){if(engine||loading)return;loading=true;retry.hidden=true;status.textContent='loading qwen3 1.7b on your device… first download takes a few minutes.';input.placeholder='loading conversation model…';
-try{if(!navigator.gpu)throw new Error('This browser does not support WebGPU. Try a recent Chrome or Edge on a computer.');
-const webllm=await import('https://esm.run/@mlc-ai/web-llm@0.2.85');
-const model=webllm.prebuiltAppConfig.model_list.find(m=>m.model_id==='Qwen3-1.7B-q4f16_1-MLC');if(!model)throw new Error('The conversation model is unavailable.');
-const workerSource="import {WebWorkerMLCEngineHandler} from 'https://esm.run/@mlc-ai/web-llm@0.2.85';const handler=new WebWorkerMLCEngineHandler();self.onmessage=event=>handler.onmessage(event);";
-engine=await webllm.CreateWebWorkerMLCEngine(new Worker(URL.createObjectURL(new Blob([workerSource],{type:'text/javascript'})),{type:'module'}),model.model_id,{initProgressCallback:p=>{status.textContent=p.text;input.placeholder='loading '+Math.round(p.progress*100)+'%…';}});
-status.textContent='Ready ♡ AI replies run on your device.';input.disabled=false;input.placeholder='';send.disabled=false;input.focus();
-}catch(error){status.textContent=error.message||'Could not load the AI. Please try again.';input.placeholder='could not load — try again';retry.hidden=false;}finally{loading=false;}}
-function loadAI(){history.push({role:'assistant',content:"what's up?"});input.disabled=false;send.disabled=false;input.placeholder='';status.textContent='Ready ♡';input.focus();addMessage('AI',"what's up?");}
+async function loadModel(){
+ if(engine)return engine;if(modelLoadPromise)return modelLoadPromise;
+ loading=true;retry.hidden=true;status.textContent='loading conversation model…';
+ modelLoadPromise=(async()=>{try{
+  if(!navigator.gpu)throw new Error('This browser needs WebGPU for local chat. Try a recent Chrome or Edge.');
+  if(!modelOwner.picnicModelPromise){modelOwner.picnicModelPromise=(async()=>{
+   const webllm=await import('https://esm.run/@mlc-ai/web-llm@0.2.85');
+   const model=webllm.prebuiltAppConfig.model_list.find(m=>m.model_id==='Qwen3-1.7B-q4f16_1-MLC');if(!model)throw new Error('The conversation model is unavailable.');
+   const workerSource="import {WebWorkerMLCEngineHandler} from 'https://esm.run/@mlc-ai/web-llm@0.2.85';const handler=new WebWorkerMLCEngineHandler();self.onmessage=event=>handler.onmessage(event);";
+   return webllm.CreateWebWorkerMLCEngine(new Worker(URL.createObjectURL(new Blob([workerSource],{type:'text/javascript'})),{type:'module'}),model.model_id,{initProgressCallback:p=>{status.textContent=p.text;}});
+  })().catch(error=>{modelOwner.picnicModelPromise=null;throw error;});}
+  engine=await modelOwner.picnicModelPromise;status.textContent='ready ♡';retry.hidden=true;return engine;
+ }catch(error){status.textContent=error.message;retry.hidden=false;return null;}finally{loading=false;modelLoadPromise=null;}})();
+ return modelLoadPromise;
+}
+function loadAI(){history.push({role:'assistant',content:"what's up?"});input.disabled=false;send.disabled=false;input.placeholder='';status.textContent='Ready ♡';input.focus();addMessage('AI',"what's up?");loadModel();}
 document.getElementById('chatty-trigger').addEventListener('click',e=>{e.stopPropagation();window.picnicCharacterChat();composer.hidden=false;window.dispatchEvent(new Event('resize'));loadAI();});
 retry.addEventListener('click',loadModel);
 composer.addEventListener('click',e=>e.stopPropagation());
 async function requestReply(text,continuation=false){
  if(busy)return;
  busy=true;send.disabled=true;clearTimeout(lineTimer);pendingLines=[];
- const checkpoint=history.length,revision=conversationRevision;
+ const checkpoint=history.length,revision=conversationRevision;let releaseModel;
  history.push({role:'user',content:continuation?'[site interaction: the visitor clicked the character for another message. continue naturally with a fresh follow-up grounded in this conversation.]':text});
  status.textContent='thinking…';
  try{
   await loadModel();send.disabled=true;
   if(!engine)throw new Error('Model unavailable');
+  const previous=modelOwner.picnicGenerationTail||Promise.resolve();modelOwner.picnicGenerationTail=new Promise(resolve=>{releaseModel=resolve;});await previous;
   const messages=buildMessages(continuation);
   let answer;
   for(let attempt=0;attempt<2;attempt++){
-   const result=await engine.chat.completions.create({messages,max_tokens:220,temperature:.7,extra_body:{enable_thinking:false}});
+   const result=await engine.chat.completions.create({messages,max_tokens:160,temperature:.7,extra_body:{enable_thinking:false}});
    answer=(result.choices[0].message.content||'').replace(/<think>[\s\S]*?<\/think>/g,'').trim();
    try{if(result.choices[0].finish_reason==='length')throw new Error('Reply cut off');sequence(answer);break;}
-   catch(error){if(attempt)throw error;messages[0].content+='\n<redirect>Return complete concise dialogue, at most 60 words, responding to the current conversation.</redirect>';}
+   catch(error){if(attempt)throw error;messages[0].content+='\n<redirect>Return complete concise dialogue, at most 40 words, responding to the current conversation.</redirect>';}
   }
   if(revision!==conversationRevision){history.length=checkpoint;return;}
   history.push({role:'assistant',content:answer});addMessage('AI',answer);status.textContent='ready ♡';
  }catch(error){history.length=checkpoint;status.textContent='that reply failed. try again.';input.placeholder='reply failed — send again';}
- finally{busy=false;send.disabled=false;if(!continuation)input.focus();}
+ finally{releaseModel?.();busy=false;send.disabled=false;if(!continuation)input.focus();}
 }
 window.addEventListener('picnic-next-message',()=>{if(pendingLines.length){nextLine();return;}requestReply('',true);});
 document.getElementById('ai-form').addEventListener('submit',e=>{e.preventDefault();const text=input.value.trim();if(!text||busy)return;input.value='';requestReply(text);});
