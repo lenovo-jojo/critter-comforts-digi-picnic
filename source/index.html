@@ -383,7 +383,7 @@
     ];
     let returningVisitor=false;
     try{if(!companionMode){returningVisitor=localStorage.getItem('picnic_visited')==='yes';localStorage.setItem('picnic_visited','yes');}}catch(_){}
-    if(companionMode)lines.splice(0,lines.length,"take a load off :)","critter comforts tv has lots of my favorite shows to stream","click the weather for a little retrocast","there's tarot if you're feeling spooky","or some classic html games if you wanna test your skills",null);
+    if(companionMode)lines.splice(0,lines.length,"you want the laptop tour?","critter comforts tv has lots of my favorite shows to stream","click the weather for a little retrocast","there's tarot if you're feeling spooky","or some classic html games if you wanna test your skills",null);
     if(returningVisitor)lines[0]=Math.random()<.5?"hey! you're back!":"oh it's you again! hi. :)";
     let hasStarted = false, idx = -1, isTyping = false, typingInterval = null, currentFullText = "";
     let companionDismissTimer;
@@ -408,7 +408,12 @@
 
     window.picnicCharacterReply=async text=>{await ensureAudioReady();typeWriter(text.toLowerCase());};
     window.picnicCharacterChat=()=>{if(!window.picnicLLMEnabled)return;ensureAudioReady();characterChatActive=true;finishTypingNow();showTapIndicator(false);document.getElementById("chatty-trigger").style.display="none";};
-    function syncChatty(){if(currentFullText.includes('take a load off')&&!isTyping)rememberIntro();document.getElementById('chatty-trigger').style.display=window.picnicLLMEnabled&&introComplete&&!characterChatActive?'block':'none';}
+    function syncChatty(){syncTourChoice();if(currentFullText.includes('take a load off')&&!isTyping)rememberIntro();document.getElementById('chatty-trigger').style.display=window.picnicLLMEnabled&&introComplete&&!characterChatActive?'block':'none';}
+    const laptopTour=companionMode&&!new URLSearchParams(location.search).has('surface');let tourChosen=false;
+    const tourChoices=document.createElement('div');tourChoices.id='laptop-tour-choices';tourChoices.hidden=true;
+    for(const [label,yes] of [['yes plz!',true],['nah i got it!',false]]){const button=document.createElement('button');button.type='button';button.textContent=label;button.addEventListener('click',e=>{e.stopPropagation();tourChosen=true;tourChoices.hidden=true;if(yes){idx=0;ensureAudioReady();playNext();}else{idx=lines.length-1;showLine('make yourself at home :)');}});tourChoices.append(button);}
+    speechEl.append(tourChoices);
+    function syncTourChoice(){tourChoices.hidden=!(laptopTour&&!tourChosen&&!isTyping&&currentFullText==='you want the laptop tour?');}
     function finishTypingNow(){ if (!isTyping) return; clearInterval(typingInterval); speechTextEl.textContent = currentFullText; isTyping = false; showTapIndicator(true); setMeMode('idle'); syncChatty(); }
     function typeWriter(text, speed = 28){
       isTyping = true; currentFullText = text; syncChatty(); speechTextEl.textContent = ""; speechEl.style.display = "block"; showTapIndicator(false); positionSpeechBubble();
@@ -481,6 +486,7 @@
     function randomIndex(){ if (unusedIndexes.length === 0) refillShuffle(); const r = Math.floor(Math.random() * unusedIndexes.length); return unusedIndexes.splice(r, 1)[0]; }
     function playSoundcloudRandom(){ if (!widgetReady) return; const idx = randomIndex(); if (typeof widget.skip === 'function') widget.skip(idx); else if (typeof widget.next === 'function') widget.next(); widget.play(); startBobDanceCycle(); }
     function playNext(){
+      if(laptopTour&&!tourChosen&&currentFullText==='you want the laptop tour?'&&!isTyping)return;
       if (!widgetReady) return;
       playSoundcloudRandom();
       boombox.querySelector('img').src = '/assets/boombox.gif?' + Date.now();
@@ -790,5 +796,5 @@ if(companionMode){
 .speech{overflow:visible!important;max-height:none!important}#speech-text{overflow-wrap:anywhere}
 html.companion-mode.surface-companion .me-img{left:auto!important;right:12px!important;bottom:0!important;top:auto!important;width:110px!important}
 html.companion-mode.surface-companion .speech{width:min(270px,calc(100vw - 32px))!important;font-size:9px!important;left:50%!important;top:auto!important;bottom:125px!important;transform:translateX(-50%)!important}
-</style><script>if(companionMode&&new URLSearchParams(location.search).has('surface'))document.documentElement.classList.add('surface-companion', 'surface-'+new URLSearchParams(location.search).get('surface'));</script><style>html.companion-mode.surface-phone .me-img{left:50%!important;right:auto!important;transform:translateX(-50%)!important}</style><style>html:not(.companion-mode) .main-container>#speech{z-index:8!important}</style></body>
+</style><script>if(companionMode&&new URLSearchParams(location.search).has('surface'))document.documentElement.classList.add('surface-companion', 'surface-'+new URLSearchParams(location.search).get('surface'));</script><style>html.companion-mode.surface-phone .me-img{left:50%!important;right:auto!important;transform:translateX(-50%)!important}</style><style>html:not(.companion-mode) .main-container>#speech{z-index:8!important}</style><style>#laptop-tour-choices[hidden]{display:none}#laptop-tour-choices{display:flex;justify-content:center;gap:8px;margin-top:12px}#laptop-tour-choices button{background:transparent;color:inherit;border:1px solid currentColor;padding:6px 8px;font:16px VT323,monospace}</style></body>
 </html>
