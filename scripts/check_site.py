@@ -18,12 +18,13 @@ class References(HTMLParser):
                 issues.append(f"{self.page.name}: missing {url.path}")
 node = shutil.which("node")
 for page in sorted(ROOT.glob("*.html")):
-    source = page.read_text()
+    source = page.read_text(encoding="utf-8")
     References(page).feed(source)
     if node:
-        for index, script in enumerate(re.findall(r"<script\b[^>]*>(.*?)</script>", source, re.S | re.I)):
-            if not script.strip(): continue
-            with tempfile.NamedTemporaryFile(suffix=".mjs", mode="w") as temp:
+        for index, (attrs, script) in enumerate(re.findall(r"<script\b([^>]*)>(.*?)</script>", source, re.S | re.I)):
+            # importmap and JSON blocks are data, not JavaScript
+            if not script.strip() or re.search(r"type=[\"']?(importmap|application/(ld\+)?json)", attrs, re.I): continue
+            with tempfile.NamedTemporaryFile(suffix=".mjs", mode="w", encoding="utf-8") as temp:
                 temp.write(script); temp.flush()
                 result = subprocess.run([node, "--check", temp.name], capture_output=True, text=True)
                 if result.returncode: issues.append(f"{page.name} script {index}: {result.stderr}")
